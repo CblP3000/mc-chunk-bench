@@ -117,6 +117,17 @@ fn is_world_dir(dir: &Path) -> bool {
     dir.join("region").is_dir() || dir.join("level.dat").is_file()
 }
 
+/// Миры, исключаемые из выборки (на диске они остаются нетронутыми).
+/// Плоские миры дают почти пустые чанки, 2b2t — легаси-чанки с большим
+/// числом однотипных блоков; оба искажают картину сжатия.
+fn is_excluded_world(dir: &Path) -> bool {
+    let name = dir
+        .file_name()
+        .map(|n| n.to_string_lossy().to_lowercase())
+        .unwrap_or_default();
+    name.contains("плоский") || name.contains("flat") || name.contains("2b2t")
+}
+
 /// List world directories under a saves root.
 pub fn discover_worlds(saves_root: &Path) -> Result<Vec<PathBuf>> {
     let mut out = Vec::new();
@@ -129,8 +140,11 @@ pub fn discover_worlds(saves_root: &Path) -> Result<Vec<PathBuf>> {
     for e in rd {
         let e = e?;
         let p = e.path();
-        if p.is_dir() && is_world_dir(&p) {
+        if p.is_dir() && is_world_dir(&p) && !is_excluded_world(&p) {
+            eprintln!("  include world: {}", p.display());
             out.push(p);
+        } else if p.is_dir() && is_world_dir(&p) {
+            eprintln!("  EXCLUDED world: {}", p.display());
         }
     }
     if out.is_empty() {
