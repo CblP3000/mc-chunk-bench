@@ -15,9 +15,19 @@ use std::collections::HashMap;
 
 pub struct CmMixCodec;
 
-// ВРЕМЕННО ОТКЛЮЧЁН: слишком медленный encode/decode (~11 мс/чанк).
-// Оставил реализацию и тесты; для включения вернуть запись в REGISTRY.
-pub const REGISTRY: &[RegistryEntry] = &[];
+pub const REGISTRY: &[RegistryEntry] = &[
+    // ВРЕМЕННО ОТКЛЮЧЁН: слишком медленный encode/decode (~11 мс/чанк).
+    // Для включения уберите комментарий со строк ниже.
+    // RegistryEntry {
+    //     id: "cm-mix",
+    //     name: "CM Mix",
+    //     group: "context-modeling",
+    //     description: "Контекстное моделирование (lpaq-подобное): палитра + побитовый \
+    //                   бинарный арифметический кодер с миксером хэшированных 3D-контекстов \
+    //                   и APM. Максимальная степень сжатия для воксельных данных.",
+    //     make: || Box::new(CmMixCodec) as Box<dyn Codec>,
+    // },
+];
 
 #[cfg(test)]
 mod tests {
