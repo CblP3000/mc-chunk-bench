@@ -324,7 +324,6 @@ function renderCards(d){
     ['лучшее сжатие', bestSize ? `${bestSize.name} · ${fmtKB(bestSize.bytes_avg)}` : '—', '', true],
     ['лучший коэффициент сжатия', bestRatio ? `${bestRatio.id} · ${fmtRatio(ratioOf(d, bestRatio))}` : '—', '', false],
     ['самый быстрый encode', bestEnc ? `${bestEnc.id} · ${fmtUs(bestEnc.encode_us_avg)}` : '—', '', false],
-    ['время/размер (raw)', `${fmtUs(okRes.find(r => r.id === 'raw')?.encode_us_avg ?? 0)} · ${fmtKB(d.raw_bytes)}`, '', false],
   ];
   for (const [k, v, s, lead] of cardDefs){
     const c = document.createElement('div');
