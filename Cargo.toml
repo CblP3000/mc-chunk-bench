@@ -1,0 +1,18 @@
+[package]
+name = "chunk_saver"
+version = "0.1.0"
+edition = "2021"
+description = "Benchmark of Minecraft chunk storage algorithms with web visualization"
+license = "MIT"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+flate2 = "1"
+anyhow = "1"
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+[profile.release]
+opt-level = 3
+debug = false
