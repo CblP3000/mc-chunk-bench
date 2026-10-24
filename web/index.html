@@ -316,7 +316,8 @@ function render(){
 function renderCards(d){
   const cards = document.getElementById('cards');
   cards.innerHTML = '';
-  const okRes = vis(d).filter(r => r.ok);
+  // raw — эталон/опора, в соревновании не участвует
+  const okRes = vis(d).filter(r => r.ok && r.id !== 'raw');
   const bestSize = [...okRes].sort((a, b) => a.bytes_avg - b.bytes_avg)[0];
   const bestEnc = [...okRes].sort((a, b) => a.encode_us_avg - b.encode_us_avg)[0];
   const bestRatio = [...okRes].sort((a, b) => ratioOf(d, b) - ratioOf(d, a))[0];
