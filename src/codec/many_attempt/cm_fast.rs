@@ -21,7 +21,7 @@ pub struct CmFastCodec;
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     id: "cm-fast",
     name: "CM-Fast",
-    group: "cm",
+    group: "context-modeling",
     description: "Быстрое контекстное моделирование: палитра + побитовый \
                   бинарный арифметический кодер с миксером нескольких \
                   хэшированных 3D-контекстов и лёгкой APM. \

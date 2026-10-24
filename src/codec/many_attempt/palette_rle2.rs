@@ -256,7 +256,7 @@ pub struct PaletteRleCodec;
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     id: "palette-rle-packbits",
     name: "Palette + PackBits RLE",
-    group: "palette",
+    group: "palette-rle",
     description: "Палитра уникальных блоков/биомов на секцию с битовой упаковкой индексов минимальной ширины (как в формате Anvil), поверх которой применяется лёгкий универсальный RLE (PackBits) для дополнительного сжатия однородных участков (воздух, сплошная порода, плоские биомы). Хорошее соотношение простоты реализации и степени сжатия.",
     make: || Box::new(PaletteRleCodec) as Box<dyn Codec>,
 }];

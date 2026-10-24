@@ -620,7 +620,7 @@ impl Codec for QuickPalCodec {
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     id: "quickpal",
     name: "QuickPal",
-    group: "palette",
+    group: "adaptive",
     description: "Адаптивная палитра+битпак (uniform/sparse/RLE/backref на секцию): \
                   декод без энтропийного декодера — очень быстрый, сжатие хорошее.",
     make: || Box::new(QuickPalCodec) as Box<dyn Codec>,

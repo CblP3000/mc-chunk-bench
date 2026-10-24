@@ -18,7 +18,7 @@ pub struct CmMixCodec;
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     id: "cm-mix",
     name: "CM Mix",
-    group: "cm",
+    group: "context-modeling",
     description: "Контекстное моделирование (lpaq-подобное): палитра + побитовый \
                   бинарный арифметический кодер с миксером хэшированных 3D-контекстов \
                   и APM. Максимальная степень сжатия для воксельных данных.",

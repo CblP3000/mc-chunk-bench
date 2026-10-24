@@ -7,7 +7,7 @@ pub struct PaletteRleCodec;
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     id: "palette-rle",
     name: "Palette + RLE",
-    group: "palette",
+    group: "palette-rle",
     description: "Палитра + bit-packing индексов + RLE. Отлично сжимает типичные секции Minecraft (мало уникальных блоков + длинные серии). Хорошее соотношение размер/скорость.",
     make: || Box::new(PaletteRleCodec) as Box<dyn Codec>,
 }];
