@@ -174,18 +174,69 @@ let REPORT = null, ACTIVE = 0, METRIC = 'total', GZIP = false;
 let DISABLED = new Set(); // id базового алгоритма
 let ZOOM = null; // {t0,t1,r0,r1} | null
 
-// Цвет группы генерируется детерминированно из её имени — принимается любая
-// группа, заранее заданного списка «разрешённых» нет.
-function groupColor(g){
-  let h = 2166136261 >>> 0;
-  for (let i = 0; i < g.length; i++) {
-    h ^= g.charCodeAt(i);
-    h = Math.imul(h, 16777619) >>> 0;
-  }
-  const hue = h % 360;
-  const sat = 62 + ((h >>> 8) % 20);
-  const light = 60 + ((h >>> 16) % 16);
-  return `hsl(${hue}, ${sat}%, ${light}%)`;
+/*
+ * generateColorPalette: создает массив цветов внутри заданного сегмента.
+ * segment: [startAngle, width] (например, [0, 180]).
+ * Логика: цвета распределяются равномерно внутри ширины сегмента,
+ * не доходя до границ (используется центрирование).
+ * Адаптированная версия с логикой различимости.
+ */
+function generateColorPalette(count, [startAngle, width] = [0, 360], saturation = 80, lightness = 55) {
+    if (count <= 0) return [];
+    const colors = [];
+    const step = width / count;
+    const SShifts = [0, -15, 10, -5, 15];
+    const LShifts = [-20, 15, -5, 20, 5];
+    const isShift = count > 10;
+
+    for (let i = 0; i < count; i++) {
+        const hue = startAngle + (i * step) + (step / 2);
+
+        let CS = saturation, CL = lightness;
+        if (isShift) {
+            const lShift = LShifts[i % LShifts.length];
+            const sShift = SShifts[i % SShifts.length];
+
+            CS = Math.max(30, Math.min(100, saturation + sShift));
+            CL = Math.max(10, Math.min(90, lightness + lShift));
+        }
+        colors.push(hslToHex(hue, CS, CL));
+    }
+    return colors;
+}
+
+function hslToHex(hue, saturation, lightness) {
+    hue = hue % 360;
+    saturation /= 100;
+    lightness /= 100;
+
+    const chroma = saturation * Math.min(lightness, 1 - lightness);
+
+    const getComponent = (componentIndex) => {
+        const sector = (componentIndex + hue / 30) % 12;
+        const colorValue = lightness - chroma * Math.max(Math.min(sector - 3, 9 - sector, 1), -1);
+        return Math.round(255 * colorValue).toString(16).padStart(2, '0');
+    };
+
+    return `#${getComponent(0)}${getComponent(8)}${getComponent(4)}`;
+}
+
+// Цвета групп: палитра генерируется для ВСЕХ групп сразу (равномерно по
+// кругу + сдвиги по насыщенности/светлоте при большом числе групп).
+// Принимается любая группа — заранее заданного списка нет.
+let GROUP_COLORS = {};
+
+function rebuildGroupColors() {
+  const groups = [...new Set(
+    REPORT.datasets.flatMap(dd => vis(dd).map(r => r.group))
+  )].sort();
+  const palette = generateColorPalette(groups.length);
+  GROUP_COLORS = {};
+  groups.forEach((g, i) => { GROUP_COLORS[g] = palette[i]; });
+}
+
+function groupColor(g) {
+  return GROUP_COLORS[g] || '#9aa0a6';
 }
 function groupMeta(g){ return { label: g, color: groupColor(g) }; }
 function baseOf(r){ return r.gzip_extra ? r.id.replace(/\+(deflate\d+|deflate\d+)$/, '') : r.id; }
@@ -247,6 +298,7 @@ function ratioOf(d, r){
 
 function render(){
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === ACTIVE));
+  rebuildGroupColors();
   const d = REPORT.datasets[ACTIVE];
   document.getElementById('controls').style.display = 'flex';
   const groups = [...new Set(vis(d).map(r => r.group))].sort();
