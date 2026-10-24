@@ -69,7 +69,7 @@ fn read_varint(data: &[u8], pos: &mut usize) -> u64 {
 // Кодирование и декодирование одной секции (блоков или биомов)
 // ============================================================================
 
-fn encode_section(values: &[u32], len: usize, is_u16: bool) -> Vec<u8> {
+fn encode_section(values: &[u32], _len: usize, is_u16: bool) -> Vec<u8> {
     // Считаем уникальные значения и последовательности (runs)
     let mut runs = Vec::new();
     let mut unique = Vec::new();
