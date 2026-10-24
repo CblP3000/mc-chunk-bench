@@ -116,6 +116,14 @@
   /* checkbox «сжатие» */
   .chk { display:inline-flex; align-items:center; gap:8px; cursor:pointer; color:var(--mut); font-size:13px; user-select:none; }
   .chk input { width:16px; height:16px; accent-color:var(--gold); cursor:pointer; }
+  .alglist { display:flex; gap:6px; flex-wrap:wrap; }
+  .algchip { display:inline-flex; align-items:center; gap:6px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:999px; padding:3px 10px 3px 6px;
+    font-size:12px; color:var(--mut); cursor:pointer; user-select:none; }
+  .algchip input { width:14px; height:14px; accent-color:var(--gold); cursor:pointer; }
+  .algchip.off { opacity:.45; text-decoration:line-through; }
+  .rubber { fill:rgba(240,185,92,.18); stroke:var(--gold); stroke-width:1; pointer-events:none; }
+  .zoomreset { color:var(--gold); cursor:pointer; text-decoration:underline dotted; font-size:12px; margin-left:8px; }
 
   /* chart element paint classes */
   .cg { stroke:#2b2620; } .ct { fill:#978b7d; }
@@ -154,6 +162,7 @@
     <option value="decode">только decode</option>
   </select>
   <label class="chk"><input type="checkbox" id="gzip"> Сжатие (все методы + deflate)</label>
+  <div class="alglist" id="alglist"></div>
   <span class="legend" id="mainlegend"></span>
 </div>
 <div class="wrap lw" id="charts"></div>
@@ -168,6 +177,8 @@ const fmtRatio = r => r >= 100 ? r.toFixed(0) + '×' : r.toFixed(1) + '×';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let REPORT = null, ACTIVE = 0, METRIC = 'total', GZIP = false;
+let DISABLED = new Set(); // id базового алгоритма
+let ZOOM = null; // {t0,t1,r0,r1} | null
 
 const GROUP_META = {
   raw:       { label: 'RAW', color: '#9aa0a6' },
@@ -177,7 +188,8 @@ const GROUP_META = {
 };
 function groupMeta(g){ return GROUP_META[g] || { label: g, color: 'var(--coral)' }; }
 function groupCls(g){ return 'grp-' + (GROUP_META[g] ? g : 'other'); }
-function vis(d){ return d.results.filter(r => !r.gzip_extra || GZIP); }
+function baseOf(r){ return r.gzip_extra ? r.id.replace(/\+(deflate\d+|deflate\d+)$/, '') : r.id; }
+function vis(d){ return d.results.filter(r => (!r.gzip_extra || GZIP) && !DISABLED.has(baseOf(r))); }
 
 async function init(){
   const r = await fetch('/api/report');
@@ -203,6 +215,26 @@ async function init(){
   });
   document.getElementById('metric').onchange = e => { METRIC = e.target.value; render(); };
   document.getElementById('gzip').onchange = e => { GZIP = e.target.checked; render(); };
+
+  // список алгоритмов с галочками (отключение долгих/неинтересных)
+  const algRoot = document.getElementById('alglist');
+  const baseIds = [...new Set(
+    REPORT.datasets.flatMap(d => d.results.filter(r => !r.gzip_extra).map(r => r.id))
+  )].sort();
+  for (const id of baseIds) {
+    const l = document.createElement('label');
+    l.className = 'algchip';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.checked = true;
+    cb.onchange = () => {
+      if (cb.checked) DISABLED.delete(id); else DISABLED.add(id);
+      l.classList.toggle('off', !cb.checked);
+      render();
+    };
+    l.appendChild(cb);
+    l.appendChild(document.createTextNode(id));
+    algRoot.appendChild(l);
+  }
   render();
 }
 
@@ -259,14 +291,17 @@ function renderScatter(d){
   const panel = document.createElement('div'); panel.className = 'panel';
   panel.innerHTML = `<span class="kicker">Главный график</span>
     <h2>Коэффициент сжатия (лог-шкала) × время (${METRIC === 'encode' ? 'encode' : METRIC === 'decode' ? 'decode' : 'encode+decode'})</h2>
-    <div class="hint">сточка = алгоритм (наведите для деталей). Жёлтая линия — фронт лучших: строится от самого быстрого и не опускается вниз (по коэффициенту сжатия). Подписаны только точки фронта.</div>`;
+    <div class="hint">точка = алгоритм (наведите для деталей). Жёлтая линия — фронт лучших: строится от самого быстрого и не опускается вниз (по коэффициенту сжатия). Подписаны только точки фронта. Перетащите мышью по графику, чтобы приблизить область<span class="zoomreset" id="zoomreset">сброс приближения</span></div>`;
   const W = 1120, H = 520, ML = 70, MR = 30, MT = 24, MB = 46;
   const iw = W - ML - MR, ih = H - MT - MB;
   const okRes = vis(d).filter(r => r.ok && r.id !== 'raw');
-  const maxT = Math.max(...okRes.map(timeOf)) * 1.12;
-  const minT = Math.min(...okRes.map(timeOf)) * 0.8;
-  const maxR = Math.max(...okRes.map(r => ratioOf(d, r))) * 1.15;
-  const minR = Math.min(1, Math.min(...okRes.map(r => ratioOf(d, r))) * 0.75);
+  const fullT = { min: Math.min(...okRes.map(timeOf)) * 0.8, max: Math.max(...okRes.map(timeOf)) * 1.12 };
+  const fullR = { min: Math.min(1, Math.min(...okRes.map(r => ratioOf(d, r))) * 0.75), max: Math.max(...okRes.map(r => ratioOf(d, r))) * 1.15 };
+  let maxT = fullT.max, minT = fullT.min, maxR = fullR.max, minR = fullR.min;
+  if (ZOOM) {
+    minT = Math.max(fullT.min, ZOOM.t0); maxT = Math.min(fullT.max, ZOOM.t1);
+    minR = Math.max(fullR.min, ZOOM.r0); maxR = Math.min(fullR.max, ZOOM.r1);
+  }
   const x = t => ML + iw * (Math.log(t) - Math.log(minT)) / (Math.log(maxT) - Math.log(minT));
   const y = r => MT + ih * (1 - (Math.log(r) - Math.log(minR)) / (Math.log(maxR) - Math.log(minR)));
   const sizeMax = Math.max(...okRes.map(r => r.bytes_avg));
@@ -433,6 +468,54 @@ function renderScatter(d){
   s += '</svg>';
   panel.innerHTML += s;
   host.appendChild(panel);
+
+  // приближение перетаскиванием (область на графике)
+  const svgEl = panel.querySelector('svg');
+  const zr = document.getElementById('zoomreset');
+  if (zr) zr.onclick = () => { ZOOM = null; render(); };
+  const toSvg = e => {
+    const r = svgEl.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
+  };
+  let drag = null;
+  svgEl.addEventListener('pointerdown', e => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    const p = toSvg(e);
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('class', 'rubber');
+    svgEl.appendChild(rect);
+    drag = { x0: p.x, y0: p.y, x1: p.x, y1: p.y, rect };
+    try { svgEl.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  svgEl.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const p = toSvg(e);
+    drag.x1 = p.x; drag.y1 = p.y;
+    const x0 = Math.min(drag.x0, drag.x1), y0 = Math.min(drag.y0, drag.y1);
+    drag.rect.setAttribute('x', x0); drag.rect.setAttribute('y', y0);
+    drag.rect.setAttribute('width', Math.abs(drag.x1 - drag.x0));
+    drag.rect.setAttribute('height', Math.abs(drag.y1 - drag.y0));
+  });
+  svgEl.addEventListener('pointerup', () => {
+    if (!drag) return;
+    if (drag.rect) drag.rect.remove();
+    const w = Math.abs(drag.x1 - drag.x0), h = Math.abs(drag.y1 - drag.y0);
+    if (w > 8 && h > 8) {
+      const ax = Math.min(drag.x0, drag.x1), bx = Math.max(drag.x0, drag.x1);
+      const ay = Math.min(drag.y0, drag.y1), by = Math.max(drag.y0, drag.y1);
+      const tOf = xv => Math.exp(Math.log(minT) + (xv - ML) / iw * (Math.log(maxT) - Math.log(minT)));
+      const rOf = yv => Math.exp(Math.log(minR) + (MT + ih - yv) / ih * (Math.log(maxR) - Math.log(minR)));
+      const t0 = Math.max(fullT.min, Math.min(tOf(ax), tOf(bx)));
+      const t1 = Math.min(fullT.max, Math.max(tOf(ax), tOf(bx)));
+      const r0 = Math.max(fullR.min, Math.min(rOf(ay), rOf(by)));
+      const r1 = Math.min(fullR.max, Math.max(rOf(ay), rOf(by)));
+      if (t1 - t0 > 1e-9 && r1 - r0 > 1e-9) {
+        ZOOM = { t0, t1, r0, r1 };
+        render();
+      }
+    }
+    drag = null;
+  });
 }
 
 // ---------- размер по датасетам (original vs pruned) ----------
