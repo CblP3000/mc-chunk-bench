@@ -160,7 +160,7 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 
 4. **Полный бенчмарк** (самый важный тест):
    ```bash
-   cargo run --release --bin chunk_saver -- bench --max-chunks 96
+   cargo run --release --bin chunk_saver -- bench --max-chunks 512
    ```
    Он замерит encode/decode время, размер и **проверит round-trip для всех
    алгоритмов из реестра**. Если `ok=false` — в отчёте будет причина
@@ -181,7 +181,7 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 - [ ] `src/codec/mod.rs` **не изменялся** (это проверено тестом ниже).
 - [ ] `cargo build --release` собирается без ошибок (build.rs сам подхватил файл).
 - [ ] `cargo test` проходит.
-- [ ] `cargo run --release --bin chunk_saver -- bench --max-chunks 96`
+- [ ] `cargo run --release --bin chunk_saver -- bench --max-chunks 512`
       показывает `ok=true` для нового алгоритма (round-trip OK) и id в списке.
 - [ ] `cargo run --release --bin chunk_saver -- serve --port 8085` — алгоритм
       виден на странице.

@@ -20,7 +20,7 @@ fn parse_args() -> Args {
     let mut args = std::env::args().skip(1);
     let cmd = args.next().unwrap_or_else(|| "bench".to_string());
     let mut world = PathBuf::from(DEFAULT_SAVES);
-    let mut max_chunks = 96usize;
+    let mut max_chunks = 512usize;
     let mut seed = 1u64;
     let mut port = DEFAULT_PORT;
     let mut a = args.next();
@@ -77,7 +77,7 @@ fn usage() {
     eprintln!("  chunk_saver serve [--world DIR] [--max-chunks N] [--seed S] [--port P]");
     eprintln!();
     eprintln!("  --world       path to a save, or a directory of saves (default: {DEFAULT_SAVES})");
-    eprintln!("  --max-chunks  chunks to sample (default 96)");
+    eprintln!("  --max-chunks  chunks to sample (default 512)");
     eprintln!("  --seed        RNG seed for sampling (default 1)");
     eprintln!("  --port        HTTP port for 'serve' (default {DEFAULT_PORT}; never 8080)");
 }

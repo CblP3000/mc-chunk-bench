@@ -9,14 +9,14 @@ Rust-приложение: читает **реальные миры** из `.min
 
 ```bash
 # 1) Бенчмарк → JSON в stdout
-cargo run --release --bin chunk_saver -- bench --max-chunks 96
+cargo run --release --bin chunk_saver -- bench --max-chunks 512
 
 # 2) Веб-интерфейс (по умолчанию порт 8095, НЕ 8080)
 cargo run --release --bin chunk_saver -- serve --port 8095
 
 # параметры
 #   --world DIR      путь к сейву или папке saves (default: /mnt/D/lol/.minecraft/home/Fabric 1.21.11/saves)
-#   --max-chunks N   сколько чанков сэмплировать (default 96)
+#   --max-chunks N   сколько чанков сэмплировать (default 512)
 #   --seed S         детерминированная выборка
 #   --port P         порт HTTP (default 8095; 8080 запрещён)
 ```
@@ -74,7 +74,7 @@ cargo run --release --bin chunk_saver -- serve --port 8095
 (аналог Bobby-кэша). Для каждого алгоритма считается и «оригинальный» датасет,
 и «обрезанный» — видно, насколько сжатие выигрывает от оклюзии.
 
-## Результаты (96 чанков из реальных миров, см. `report.json`)
+## Результаты (512 чанков из реальных миров, см. `report.json`)
 
 | Алгоритм | оригинал, B/чанк | после оклюзии, B/чанк | encode | decode |
 |---|---:|---:|---:|---:|
@@ -104,7 +104,7 @@ cargo run --release --bin chunk_saver -- serve --port 8095
 2. В этом же файле объявите `pub const REGISTRY: &[RegistryEntry]` с id, именем,
    категорией и описанием. **Правки `src/codec/mod.rs` не нужны** — `build.rs`
    сам сканирует каталог `src/codec/` и подхватывает новый файл.
-3. Проверьте: `cargo test`, `cargo run --release --bin chunk_saver -- bench --max-chunks 96`
+3. Проверьте: `cargo test`, `cargo run --release --bin chunk_saver -- bench --max-chunks 512`
    (round-trip должен дать `ok=true`), затем `serve`.
 4. Готово — алгоритм появится в бенчмарке, отчёте и на графиках автоматически.
    Так же легко подключить десятки вариантов, сгенерированных на arena.ai.

@@ -162,7 +162,7 @@ impl Codec for MyAlgoCodec {
 
 ```
 cargo build --release
-cargo run --release --bin chunk_saver -- bench --max-chunks 96
+cargo run --release --bin chunk_saver -- bench --max-chunks 512
 ```
 
 Алгоритм валиден, если сборка проходит без ошибок, а в выводе `bench` его

@@ -6,7 +6,7 @@ fn main() -> Result<()> {
     let worlds = discover_worlds(std::path::Path::new(
         "/mnt/D/lol/.minecraft/home/Fabric 1.21.11/saves",
     ))?;
-    let data = load_dataset(&worlds, 96, 1)?;
+    let data = load_dataset(&worlds, 512, 1)?;
     let regs = chunk_saver::codec::all_registrations(true);
     let reg = regs.iter().find(|r| r.codec.id() == "rle-column+deflate12").unwrap();
     let ctx = Ctx {
