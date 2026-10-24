@@ -425,18 +425,31 @@ pub fn prune_interior(chunk: &mut Chunk) -> usize {
         }
     }
 
-    // Remove non-visible non-air blocks.
+    // Remove non-visible non-air blocks: a solid block is visible iff at
+    // least one of its 6 neighbours is reached air (the "shell" of the escape).
     let mut removed = 0;
     for y in 0..h {
         let sec = &mut chunk.sections[y / 16];
         for z in 0..w {
             for x in 0..w {
                 let r = (y % 16) * 256 + z * 16 + x;
-                if sec.blocks[r] != air && !visible_air[idx(x, y, z)] {
+                if sec.blocks[r] == air {
+                    continue;
+                }
+                let visible = dirs.iter().any(|&(dx, dy, dz)| {
+                    let (nx, ny, nz) = (x as i32 + dx, (y as i32) + dy, z as i32 + dz);
+                    if nx < 0 || nx >= w as i32 || nz < 0 || nz >= w as i32 {
+                        return false;
+                    }
+                    if ny < 0 || ny >= h as i32 {
+                        return false;
+                    }
+                    visible_air[idx(nx as usize, ny as usize, nz as usize)]
+                });
+                if !visible {
                     sec.blocks[r] = air;
                     removed += 1;
                 }
-                // Blocks adjacent to visible air are visible; keep them.
             }
         }
     }
@@ -480,5 +493,62 @@ mod tests {
         }
         let out = unpack_long_array(&data, vals.len(), 12);
         assert_eq!(out, vals);
+    }
+
+    fn solid_section(id: u32) -> Section {
+        Section { blocks: vec![id; SECTION_BLOCKS], biomes: vec![0u16; SECTION_BIOMES] }
+    }
+
+    #[test]
+    fn prune_keeps_shell_next_to_air() {
+        // 16^3 chunk of solid stone with an air tunnel along X at y=8, z=8.
+        // BFS must reach the tunnel from the x=0 boundary face and keep only
+        // solid blocks directly touching it.
+        let mut ch = Chunk {
+            x: 0,
+            z: 0,
+            section_min_y: 0,
+            sections: vec![solid_section(5)],
+        };
+        {
+            let air = 0u32;
+            let b = &mut ch.sections[0].blocks;
+            for x in 0..CHUNK_W {
+                b[8 * 256 + 8 * 16 + x] = air;
+            }
+        }
+        let removed = prune_interior(&mut ch);
+        let blocks = &ch.sections[0].blocks;
+        let at = |x: usize, y: usize, z: usize| blocks[y * 256 + z * 16 + x];
+
+        // tunnel stays air
+        for x in 0..CHUNK_W {
+            assert_eq!(at(x, 8, 8), 0);
+        }
+        // direct neighbours of the tunnel stay
+        let kept = (0..CHUNK_W)
+            .map(|x| {
+                [(x, 7, 8), (x, 9, 8), (x, 8, 7), (x, 8, 9)]
+                    .iter()
+                    .filter(|&&(x, y, z)| at(x, y, z) == 5)
+                    .count()
+            })
+            .sum::<usize>();
+        assert_eq!(kept, 4 * CHUNK_W);
+        // corners one step away from the tunnel are culled
+        assert_eq!(at(5, 7, 7), 0);
+        assert_eq!(at(5, 6, 8), 0);
+        assert_eq!(removed, SECTION_BLOCKS - CHUNK_W - kept);
+    }
+
+    #[test]
+    fn prune_air_chunk_removes_nothing() {
+        let mut ch = Chunk {
+            x: 0,
+            z: 0,
+            section_min_y: 0,
+            sections: vec![Section::air()],
+        };
+        assert_eq!(prune_interior(&mut ch), 0);
     }
 }
