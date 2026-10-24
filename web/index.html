@@ -132,12 +132,6 @@
   .panel svg text { pointer-events:none; }
   .penc { fill:var(--gold); } .pdec { fill:var(--violet); }
   .porig { fill:#d8a452; } .pprun { fill:#e0635c; }
-  .grp-raw { fill:#9aa0a6; } .grp-rle { fill:var(--mint); }
-  .grp-minecraft { fill:var(--gold); } .grp-layered { fill:var(--violet); }
-  .grp-other { fill:var(--coral); }
-  .sw.grp-raw { background:#9aa0a6; } .sw.grp-rle { background:var(--mint); }
-  .sw.grp-minecraft { background:var(--gold); } .sw.grp-layered { background:var(--violet); }
-  .sw.grp-other { background:var(--coral); }
 
   @media (max-width:1180px){ .grid2{grid-template-columns:1fr;} .hero{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:640px){ .lw{padding-left:14px;padding-right:14px;} h1{font-size:19px;}
@@ -180,14 +174,20 @@ let REPORT = null, ACTIVE = 0, METRIC = 'total', GZIP = false;
 let DISABLED = new Set(); // id базового алгоритма
 let ZOOM = null; // {t0,t1,r0,r1} | null
 
-const GROUP_META = {
-  raw:       { label: 'RAW', color: '#9aa0a6' },
-  rle:       { label: 'RLE', color: 'var(--mint)' },
-  minecraft: { label: 'Minecraft', color: 'var(--gold)' },
-  layered:   { label: 'Layered', color: 'var(--violet)' },
-};
-function groupMeta(g){ return GROUP_META[g] || { label: g, color: 'var(--coral)' }; }
-function groupCls(g){ return 'grp-' + (GROUP_META[g] ? g : 'other'); }
+// Цвет группы генерируется детерминированно из её имени — принимается любая
+// группа, заранее заданного списка «разрешённых» нет.
+function groupColor(g){
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < g.length; i++) {
+    h ^= g.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  const hue = h % 360;
+  const sat = 62 + ((h >>> 8) % 20);
+  const light = 60 + ((h >>> 16) % 16);
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
+}
+function groupMeta(g){ return { label: g, color: groupColor(g) }; }
 function baseOf(r){ return r.gzip_extra ? r.id.replace(/\+(deflate\d+|deflate\d+)$/, '') : r.id; }
 function vis(d){ return d.results.filter(r => (!r.gzip_extra || GZIP) && !DISABLED.has(baseOf(r))); }
 
@@ -249,12 +249,10 @@ function render(){
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === ACTIVE));
   const d = REPORT.datasets[ACTIVE];
   document.getElementById('controls').style.display = 'flex';
+  const groups = [...new Set(vis(d).map(r => r.group))].sort();
   document.getElementById('mainlegend').innerHTML =
-    `<span><span class="sw circ grp-raw"></span>RAW</span>
-     <span><span class="sw circ grp-rle"></span>RLE</span>
-     <span><span class="sw circ grp-minecraft"></span>Minecraft</span>
-     <span><span class="sw circ grp-layered"></span>Layered</span>
-     <span style="color:var(--mut2)">(точки окрашены по группе метода)</span>`;
+    groups.map(g => `<span><span class="sw circ" style="background:${groupColor(g)}"></span>${esc(g)}</span>`).join('') +
+    `<span style="color:var(--mut2)">(цвет группы генерируется автоматически)</span>`;
   renderCards(d);
   renderScatter(d);
   renderSizeAcrossDatasets();
@@ -444,11 +442,11 @@ function renderScatter(d){
 
   // точки
   pts.forEach(p => {
-    const cls = groupCls(p.r.group);
+    const col = groupColor(p.r.group);
     if (p.top) {
       s += `<circle cx="${p.tx}" cy="${p.ty}" r="${(p.rad + 3).toFixed(1)}" fill="none" stroke="var(--gold)" stroke-width="1.2" opacity="0.55" pointer-events="none"/>`;
     }
-    s += `<circle cx="${p.tx}" cy="${p.ty}" r="${p.rad.toFixed(1)}" class="${cls}" opacity="0.9">`;
+    s += `<circle cx="${p.tx}" cy="${p.ty}" r="${p.rad.toFixed(1)}" fill="${col}" opacity="0.9">`;
     s += `<title>${esc(p.r.name)}&#10;${esc(p.r.description || '')}&#10;размер ${fmtKB(p.r.bytes_avg)} (коэфф. ${fmtRatio(ratioOf(d, p.r))})&#10;encode ${fmtUs(p.r.encode_us_avg)} + decode ${fmtUs(p.r.decode_us_avg)}</title></circle>`;
   });
 
@@ -457,7 +455,7 @@ function renderScatter(d){
     if (!p.top || p.hidden) return;
     const x0 = p.side === 'r' ? p.tx + p.rad + 2 : p.tx - p.rad - 2;
     const x1 = lx(p);
-    s += `<line x1="${x0}" y1="${p.ty}" x2="${x1}" y2="${p.labelY}" stroke="${groupMeta(p.r.group).color}" stroke-width="1" opacity="0.55"/>`;
+    s += `<line x1="${x0}" y1="${p.ty}" x2="${x1}" y2="${p.labelY}" stroke="${groupColor(p.r.group)}" stroke-width="1" opacity="0.55"/>`;
     const tx = p.side === 'r' ? x1 + 3 : x1 - 3;
     const anchor = p.side === 'r' ? 'start' : 'end';
     const weight = p.top ? 700 : 400;
@@ -625,8 +623,7 @@ function renderRatioBars(d){
   }
   okRes.forEach((r, i) => {
     const v = ratioOf(d, r);
-    const cls = groupCls(r.group);
-    s += `<rect x="${x(i)-bw/2}" y="${yB(v)}" width="${bw}" height="${MT+ih-yB(v)}" rx="2" class="${cls}" opacity="0.85"><title>${esc(r.name)}: ${fmtRatio(v)}</title></rect>`;
+    s += `<rect x="${x(i)-bw/2}" y="${yB(v)}" width="${bw}" height="${MT+ih-yB(v)}" rx="2" fill="${groupColor(r.group)}" opacity="0.85"><title>${esc(r.name)}: ${fmtRatio(v)}</title></rect>`;
     s += `<text x="${x(i)}" y="${yB(v)-5}" text-anchor="middle" class="ct" font-size="9.5">${fmtRatio(v)}</text>`;
   });
   const step = Math.max(1, Math.ceil(n / 12));
