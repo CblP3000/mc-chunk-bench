@@ -40,20 +40,32 @@ fn main() -> Result<()> {
         biome_block_lists: &[vec![]],
     };
     let bios = LayeredCodec::new(LayeredConfig::default());
-    let h4 = LayeredCodec::new(LayeredConfig { slice_height: 4, ..Default::default() });
-    let h16 = LayeredCodec::new(LayeredConfig { slice_height: 16, ..Default::default() });
-    let h32 = LayeredCodec::new(LayeredConfig { footprint: 32, slice_height: 16 });
+    let h4 = LayeredCodec::new(LayeredConfig {
+        slice_height: 4,
+        ..Default::default()
+    });
+    let h16 = LayeredCodec::new(LayeredConfig {
+        slice_height: 16,
+        ..Default::default()
+    });
+    let h32 = LayeredCodec::new(LayeredConfig {
+        footprint: 32,
+        slice_height: 16,
+    });
 
-    let mut patterns: Vec<(&str, Vec<u32>)> = vec![];
-    patterns.push(("air", vec![0]));
-    patterns.push(("uniform-stone", vec![1]));
-    patterns.push(("small-palette", vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]));
-    patterns.push(("larger-palette", ids.clone()));
+    let mut patterns: Vec<(&str, Vec<u32>)> = vec![
+        ("air", vec![0]),
+        ("uniform-stone", vec![1]),
+        (
+            "small-palette",
+            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        ),
+        ("larger-palette", ids.clone()),
+    ];
     // periodic layers
-    let mut p = vec![0u32; SECTION_BLOCKS];
-    for i in 0..SECTION_BLOCKS {
-        p[i] = if i % 4 == 0 { 1 } else { 0 };
-    }
+    let p: Vec<u32> = (0..SECTION_BLOCKS)
+        .map(|i| if i % 4 == 0 { 1 } else { 0 })
+        .collect();
     patterns.push(("checker", p));
     // vertical stripes (column runs)
     let mut c = vec![0u32; SECTION_BLOCKS];
@@ -78,15 +90,23 @@ fn main() -> Result<()> {
     patterns.push(("noise", n));
 
     // long runs (replicator count widths 8/12/20)
-    let mut lr = vec![0u32; SECTION_BLOCKS];
-    for i in 0..SECTION_BLOCKS {
-        lr[i] = if i < 200 { 1 } else if i < 300 { 2 } else if i < 500 { 3 } else { 0 };
-    }
+    let lr: Vec<u32> = (0..SECTION_BLOCKS)
+        .map(|i| {
+            if i < 200 {
+                1
+            } else if i < 300 {
+                2
+            } else if i < 500 {
+                3
+            } else {
+                0
+            }
+        })
+        .collect();
     patterns.push(("longrun200-300-500", lr));
-    let mut lr2 = vec![0u32; SECTION_BLOCKS];
-    for i in 0..SECTION_BLOCKS {
-        lr2[i] = if i < 4090 { 1 } else { 2 };
-    }
+    let lr2: Vec<u32> = (0..SECTION_BLOCKS)
+        .map(|i| if i < 4090 { 1 } else { 2 })
+        .collect();
     patterns.push(("longrun4090", lr2));
 
     // all cells same except tiny
@@ -103,13 +123,21 @@ fn main() -> Result<()> {
                 match codec.decode(&enc, &ctx) {
                     Ok(d) => {
                         let ok = chunks_equal(&ch, &d);
-                        println!("{name} n_sec={n_sec} {codec_name}: len={} ok={ok}", enc.len());
+                        println!(
+                            "{name} n_sec={n_sec} {codec_name}: len={} ok={ok}",
+                            enc.len()
+                        );
                         if !ok {
                             let mut shown = 0;
-                            for (si, (sa, sb)) in ch.sections.iter().zip(d.sections.iter()).enumerate() {
+                            for (si, (sa, sb)) in
+                                ch.sections.iter().zip(d.sections.iter()).enumerate()
+                            {
                                 for bi in 0..sa.blocks.len() {
                                     if sa.blocks[bi] != sb.blocks[bi] {
-                                        println!("   sec{si} blk{bi} orig={} dec={}", sa.blocks[bi], sb.blocks[bi]);
+                                        println!(
+                                            "   sec{si} blk{bi} orig={} dec={}",
+                                            sa.blocks[bi], sb.blocks[bi]
+                                        );
                                         shown += 1;
                                         if shown > 8 {
                                             break;
@@ -124,7 +152,10 @@ fn main() -> Result<()> {
                         }
                     }
                     Err(e) => {
-                        println!("{name} n_sec={n_sec} {codec_name}: DECODE ERR {e} len={}", enc.len());
+                        println!(
+                            "{name} n_sec={n_sec} {codec_name}: DECODE ERR {e} len={}",
+                            enc.len()
+                        );
                         return Ok(());
                     }
                 }

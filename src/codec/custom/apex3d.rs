@@ -79,11 +79,7 @@ fn encode_predictive_blocks(
                 // 1. Сосед снизу (Down)
                 let d = if y > 0 {
                     Some(blocks[block_idx(x, y - 1, z)])
-                } else if let Some(prev) = prev_blocks {
-                    Some(prev[block_idx(x, 15, z)])
-                } else {
-                    None
-                };
+                } else { prev_blocks.map(|prev| prev[block_idx(x, 15, z)]) };
                 if let Some(val) = d {
                     cands[cand_count] = val;
                     cand_count += 1;
@@ -218,11 +214,7 @@ fn decode_predictive_blocks(
                 // 1. Сосед снизу (Down)
                 let d = if y > 0 {
                     Some(blocks[block_idx(x, y - 1, z)])
-                } else if let Some(prev) = prev_blocks {
-                    Some(prev[block_idx(x, 15, z)])
-                } else {
-                    None
-                };
+                } else { prev_blocks.map(|prev| prev[block_idx(x, 15, z)]) };
                 if let Some(val) = d {
                     cands[cand_count] = val;
                     cand_count += 1;
@@ -323,7 +315,7 @@ impl Codec for Apex3dCodec {
             }
         }
         let mut pal_vec: Vec<(u32, usize)> = block_counts.into_iter().collect();
-        pal_vec.sort_by(|a, b| b.1.cmp(&a.1));
+        pal_vec.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
         let block_palette: Vec<u32> = pal_vec.into_iter().map(|(b, _)| b).collect();
 
         write_varu32(&mut raw, block_palette.len() as u32);
@@ -345,7 +337,7 @@ impl Codec for Apex3dCodec {
             }
         }
         let mut biome_pal_vec: Vec<(u16, usize)> = biome_counts.into_iter().collect();
-        biome_pal_vec.sort_by(|a, b| b.1.cmp(&a.1));
+        biome_pal_vec.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
         let biome_palette: Vec<u16> = biome_pal_vec.into_iter().map(|(bm, _)| bm).collect();
 
         write_varu32(&mut raw, biome_palette.len() as u32);
@@ -390,8 +382,8 @@ impl Codec for Apex3dCodec {
 
             let mut copy_from = None;
             if !all_air && !all_same {
-                for prev_i in 0..s {
-                    if sec.blocks == resolved_blocks[prev_i] {
+                for (prev_i, rb) in resolved_blocks.iter().enumerate().take(s) {
+                    if sec.blocks == *rb {
                         copy_from = Some(prev_i);
                         break;
                     }

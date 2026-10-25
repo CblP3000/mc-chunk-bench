@@ -86,7 +86,7 @@ impl BitWriter {
     fn write_bits(&mut self, mut val: u64, n: u32) {
         debug_assert!(n <= 64);
         for _ in 0..n {
-            if self.bitpos % 8 == 0 {
+            if self.bitpos.is_multiple_of(8) {
                 self.buf.push(0);
             }
             let byte = self.buf.len() - 1;
@@ -113,7 +113,7 @@ impl BitWriter {
     }
 
     fn finish(mut self) -> Vec<u8> {
-        if self.bitpos % 8 != 0 {
+        if !self.bitpos.is_multiple_of(8) {
             let byte = self.buf.len() - 1;
             let rest = self.bitpos % 8;
             self.buf[byte] &= (1 << rest) - 1;
@@ -230,7 +230,7 @@ fn build_layers(chunks: &[&Chunk], cfg: &LayeredConfig) -> Result<(Vec<Vec<u32>>
         }
     }
     let height = n_sec * 16;
-    if height % cfg.slice_height != 0 {
+    if !height.is_multiple_of(cfg.slice_height) {
         bail!("slice_height must divide world height");
     }
     let n_layers = height / cfg.slice_height;

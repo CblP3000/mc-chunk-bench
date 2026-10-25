@@ -136,7 +136,7 @@ fn encode_palette_rle(data: &[u32], out: &mut Vec<u8>) {
     // Decide: raw indices vs RLE. Pick whichever is smaller.
     let bits_per_index = bits_needed(palette.len() as u32 - 1);
 
-    let raw_bytes = (data.len() * bits_per_index as usize + 7) / 8;
+    let raw_bytes = (data.len() * bits_per_index as usize).div_ceil(8);
     // RLE cost: varint(num_runs) + for each run: varint(run_length) + bits_per_index bits
     // Approximate RLE bytes
     let rle_varint_bytes: usize = runs
@@ -144,7 +144,7 @@ fn encode_palette_rle(data: &[u32], out: &mut Vec<u8>) {
         .map(|(len, _)| varint_size(*len as u32))
         .sum::<usize>();
     let rle_index_bits = runs.len() * bits_per_index as usize;
-    let rle_bytes = varint_size(runs.len() as u32) + rle_varint_bytes + (rle_index_bits + 7) / 8;
+    let rle_bytes = varint_size(runs.len() as u32) + rle_varint_bytes + rle_index_bits.div_ceil(8);
 
     if runs.len() >= data.len() / 2 || rle_bytes >= raw_bytes {
         // Raw mode: flag 0
@@ -169,7 +169,7 @@ fn write_bitpacked(out: &mut Vec<u8>, values: &[u32], bits: u8) {
         return;
     }
     let total_bits = values.len() * bits as usize;
-    let total_bytes = (total_bits + 7) / 8;
+    let total_bytes = total_bits.div_ceil(8);
     let start = out.len();
     out.resize(start + total_bytes, 0);
 
@@ -291,7 +291,7 @@ fn read_bitpacked(bytes: &[u8], pos: &mut usize, count: usize, bits: u8) -> Resu
         return Ok(vec![0; count]);
     }
     let total_bits = count * bits as usize;
-    let total_bytes = (total_bits + 7) / 8;
+    let total_bytes = total_bits.div_ceil(8);
     if *pos + total_bytes > bytes.len() {
         bail!("unexpected EOF reading bitpacked data");
     }

@@ -27,56 +27,6 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     make: || Box::new(CmFastCodec) as Box<dyn Codec>,
 }];
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::bench::chunks_equal;
-    use crate::world::{BiomeRegistry, BlockRegistry};
-
-    #[test]
-    fn roundtrip_noise() {
-        let mut reg = BlockRegistry::new();
-        let mut bio = BiomeRegistry::new();
-        let mut ids = Vec::new();
-        for i in 0..60 {
-            ids.push(reg.intern(&format!("minecraft:b{i}")));
-        }
-        for i in 0..8 {
-            bio.intern(&format!("minecraft:bm{i}"));
-        }
-        let ctx = Ctx {
-            registry: &reg,
-            biomes: &bio,
-            biome_block_lists: &[vec![]],
-        };
-        let mut rng = 12345u64;
-        let mut sections = Vec::new();
-        for _ in 0..3 {
-            let mut sec = Section::air();
-            for v in sec.blocks.iter_mut() {
-                rng ^= rng << 13;
-                rng ^= rng >> 7;
-                rng ^= rng << 17;
-                *v = ids[(rng % 60) as usize];
-            }
-            for (i, b) in sec.biomes.iter_mut().enumerate() {
-                *b = (i % 8) as u16;
-            }
-            sections.push(sec);
-        }
-        let ch = Chunk {
-            x: 0,
-            z: 0,
-            section_min_y: -64,
-            sections,
-        };
-        let codec = CmFastCodec;
-        let enc = codec.encode(&ch, &ctx);
-        let dec = codec.decode(&enc, &ctx).unwrap();
-        assert!(chunks_equal(&ch, &dec));
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Утилиты: varint / zigzag
 // ---------------------------------------------------------------------------
@@ -147,14 +97,10 @@ fn build_stretch() -> Vec<i16> {
     let mut pi = 0usize;
     for x in -2047..=2047i32 {
         let v = squash(x) as usize;
-        for i in pi..=v {
-            t[i] = x as i16;
-        }
+        t[pi..=v].fill(x as i16);
         pi = v + 1;
     }
-    for i in pi..4096 {
-        t[i] = 2047;
-    }
+    t[pi..4096].fill(2047);
     t
 }
 
@@ -372,8 +318,8 @@ impl Predictor {
     /// Возвращает вероятность бита 1 (12 бит, 1..4095).
     fn predict(&mut self, node: u32, hashes: &[u32], apm_cx: u32) -> u32 {
         let nh = node.wrapping_mul(0x9E37_79B1);
-        for i in 0..self.nm {
-            let mut h = (hashes[i] ^ nh).wrapping_mul(0x85EB_CA6B);
+        for (i, &h0) in hashes.iter().enumerate() {
+            let mut h = (h0 ^ nh).wrapping_mul(0x85EB_CA6B);
             h ^= h >> 15;
             h = h.wrapping_mul(0xC2B2_AE35);
             h ^= h >> 13;
@@ -443,7 +389,7 @@ struct BlockGrid<'a> {
 impl<'a> BlockGrid<'a> {
     #[inline]
     fn g(&self, x: i32, y: i32, z: i32) -> u32 {
-        if x < 0 || x >= 16 || z < 0 || z >= 16 || y < 0 || y >= self.h as i32 {
+        if !(0..16).contains(&x) || !(0..16).contains(&z) || y < 0 || y >= self.h as i32 {
             self.sentinel
         } else {
             self.v[(y as usize) * 256 + (z as usize) * 16 + x as usize] as u32
@@ -471,7 +417,7 @@ struct BiomeGrid<'a> {
 impl<'a> BiomeGrid<'a> {
     #[inline]
     fn g(&self, x: i32, y: i32, z: i32) -> u32 {
-        if x < 0 || x >= 4 || z < 0 || z >= 4 || y < 0 || y >= self.h as i32 {
+        if !(0..4).contains(&x) || !(0..4).contains(&z) || y < 0 || y >= self.h as i32 {
             self.sentinel
         } else {
             self.v[(y as usize) * 16 + (z as usize) * 4 + x as usize] as u32
@@ -840,5 +786,55 @@ impl Codec for CmFastCodec {
             section_min_y,
             sections,
         }])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bench::chunks_equal;
+    use crate::world::{BiomeRegistry, BlockRegistry};
+
+    #[test]
+    fn roundtrip_noise() {
+        let mut reg = BlockRegistry::new();
+        let mut bio = BiomeRegistry::new();
+        let mut ids = Vec::new();
+        for i in 0..60 {
+            ids.push(reg.intern(&format!("minecraft:b{i}")));
+        }
+        for i in 0..8 {
+            bio.intern(&format!("minecraft:bm{i}"));
+        }
+        let ctx = Ctx {
+            registry: &reg,
+            biomes: &bio,
+            biome_block_lists: &[vec![]],
+        };
+        let mut rng = 12345u64;
+        let mut sections = Vec::new();
+        for _ in 0..3 {
+            let mut sec = Section::air();
+            for v in sec.blocks.iter_mut() {
+                rng ^= rng << 13;
+                rng ^= rng >> 7;
+                rng ^= rng << 17;
+                *v = ids[(rng % 60) as usize];
+            }
+            for (i, b) in sec.biomes.iter_mut().enumerate() {
+                *b = (i % 8) as u16;
+            }
+            sections.push(sec);
+        }
+        let ch = Chunk {
+            x: 0,
+            z: 0,
+            section_min_y: -64,
+            sections,
+        };
+        let codec = CmFastCodec;
+        let enc = codec.encode(&ch, &ctx);
+        let dec = codec.decode(&enc, &ctx).unwrap();
+        assert!(chunks_equal(&ch, &dec));
     }
 }

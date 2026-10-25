@@ -74,6 +74,12 @@ impl BiomeRegistry {
     }
 }
 
+impl Default for BiomeRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct LoadedChunk {
     pub chunk: Chunk,
@@ -167,6 +173,8 @@ fn chunk_dominant_biome(chunk: &Chunk) -> u16 {
         .unwrap_or(0)
 }
 
+type RegionReport = (Vec<LoadedChunk>, Vec<(u16, u32, u64)>);
+
 fn load_region_chunks(
     region_path: &Path,
     world_label: &str,
@@ -174,7 +182,7 @@ fn load_region_chunks(
     rng: &mut Rng,
     registry: &mut BlockRegistry,
     biomes: &mut BiomeRegistry,
-) -> Result<(Vec<LoadedChunk>, Vec<(u16, u32, u64)>)> {
+) -> Result<RegionReport> {
     let region = RegionFile::open(region_path)?;
     let mut slots: Vec<usize> = (0..1024).filter(|&s| region.is_present(s)).collect();
     if slots.is_empty() {
@@ -205,10 +213,15 @@ fn load_region_chunks(
                 continue;
             }
         };
-        let chunk = match parse_chunk(&root, &mut |name| registry.intern(name), &mut |name| biomes.intern(name)) {
+        let chunk = match parse_chunk(&root, &mut |name| registry.intern(name), &mut |name| {
+            biomes.intern(name)
+        }) {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("skip chunk {slot} (parse) in {}: {e}", region_path.display());
+                eprintln!(
+                    "skip chunk {slot} (parse) in {}: {e}",
+                    region_path.display()
+                );
                 continue;
             }
         };
@@ -221,14 +234,24 @@ fn load_region_chunks(
         chunks.push(LoadedChunk {
             chunk,
             world: world_label.to_string(),
-            region: region_path.file_name().unwrap_or_default().to_string_lossy().to_string(),
+            region: region_path
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string(),
             dominant_biome: biome,
         });
         if chunks.len() >= max_chunks {
             break;
         }
     }
-    Ok((chunks, pair_counts.into_iter().map(|((b, bl), c)| (b, bl, c)).collect()))
+    Ok((
+        chunks,
+        pair_counts
+            .into_iter()
+            .map(|((b, bl), c)| (b, bl, c))
+            .collect(),
+    ))
 }
 
 /// Load up to `max_chunks` chunks from the given world directories.
@@ -243,7 +266,11 @@ pub fn load_dataset(worlds: &[PathBuf], max_chunks: usize, seed: u64) -> Result<
     // Collect all (world, region) candidates, then shuffle for variety.
     let mut candidates: Vec<(PathBuf, String)> = Vec::new();
     for w in worlds {
-        let label = w.file_name().unwrap_or_default().to_string_lossy().to_string();
+        let label = w
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
         let region_dir = w.join("region");
         if !region_dir.is_dir() {
             continue;
@@ -268,7 +295,7 @@ pub fn load_dataset(worlds: &[PathBuf], max_chunks: usize, seed: u64) -> Result<
         candidates.swap(i, j);
     }
 
-    let target_regions = candidates.len().min(24).max(1);
+    let target_regions = candidates.len().clamp(1, 24);
     let per_region = ((max_chunks as f64) / (target_regions as f64)).ceil() as usize;
     let mut remaining = max_chunks;
     for (rp, label) in candidates {
@@ -276,13 +303,14 @@ pub fn load_dataset(worlds: &[PathBuf], max_chunks: usize, seed: u64) -> Result<
             break;
         }
         let take = remaining.min(per_region);
-        let (chunks, pairs) = match load_region_chunks(&rp, &label, take, &mut rng, &mut registry, &mut biome_reg) {
-            Ok(v) => v,
-            Err(e) => {
-                eprintln!("skip region {}: {e}", rp.display());
-                continue;
-            }
-        };
+        let (chunks, pairs) =
+            match load_region_chunks(&rp, &label, take, &mut rng, &mut registry, &mut biome_reg) {
+                Ok(v) => v,
+                Err(e) => {
+                    eprintln!("skip region {}: {e}", rp.display());
+                    continue;
+                }
+            };
         for c in chunks {
             remaining = remaining.saturating_sub(1);
             all_chunks.push(c);

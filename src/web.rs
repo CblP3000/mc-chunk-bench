@@ -34,11 +34,11 @@ async fn health() -> impl IntoResponse {
 
 async fn api_report(State(state): State<Arc<WebState>>) -> impl IntoResponse {
     match serde_json::to_string(&state.report) {
-        Ok(json) => (
-            [("Cache-Control", "no-store")],
-            (StatusCode::OK, json),
+        Ok(json) => ([("Cache-Control", "no-store")], (StatusCode::OK, json)).into_response(),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("serialize error: {e}"),
         )
             .into_response(),
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("serialize error: {e}")).into_response(),
     }
 }

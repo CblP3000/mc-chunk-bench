@@ -11,7 +11,10 @@ fn main() -> Result<()> {
     let worlds = discover_worlds(std::path::Path::new(&dir), &[])?;
     let data = load_dataset(&worlds, 512, 1)?;
     let regs = chunk_saver::codec::all_registrations(true);
-    let reg = regs.iter().find(|r| r.codec.id() == "rle-column+deflate12").unwrap();
+    let reg = regs
+        .iter()
+        .find(|r| r.codec.id() == "rle-column+deflate12")
+        .unwrap();
     let ctx = Ctx {
         registry: &data.registry,
         biomes: &data.biomes,
@@ -34,11 +37,23 @@ fn main() -> Result<()> {
     let q = |p: f64| rows[((rows.len() - 1) as f64 * p) as usize].0;
     let avg: usize = rows.iter().map(|(n, _)| n).sum::<usize>() / rows.len();
     println!("chunks: {}  avg: {} B", rows.len(), avg);
-    println!("quantiles: min {}  q25 {}  median {}  q75 {}  max {}", q(0.0), q(0.25), q(0.5), q(0.75), q(1.0));
+    println!(
+        "quantiles: min {}  q25 {}  median {}  q75 {}  max {}",
+        q(0.0),
+        q(0.25),
+        q(0.5),
+        q(0.75),
+        q(1.0)
+    );
     println!("air share by chunk:");
     let mut airs: Vec<f64> = rows.iter().map(|(_, a)| *a).collect();
     airs.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    println!("  air fraction: min {:.3} median {:.3} max {:.3}", airs[0], airs[airs.len() / 2], airs[airs.len() - 1]);
+    println!(
+        "  air fraction: min {:.3} median {:.3} max {:.3}",
+        airs[0],
+        airs[airs.len() / 2],
+        airs[airs.len() - 1]
+    );
     // 10 самых плотных чанков
     println!("top-10 largest chunks:");
     for (n, a) in rows.iter().rev().take(10) {
@@ -49,8 +64,17 @@ fn main() -> Result<()> {
         let n = rows.len() as f64;
         let mx = rows.iter().map(|(x, _)| *x as f64).sum::<f64>() / n;
         let my = rows.iter().map(|(_, y)| *y).sum::<f64>() / n;
-        let cov = rows.iter().map(|(x, y)| (*x as f64 - mx) * (y - my)).sum::<f64>() / n;
-        let sx = (rows.iter().map(|(x, _)| (*x as f64 - mx).powi(2)).sum::<f64>() / n).sqrt();
+        let cov = rows
+            .iter()
+            .map(|(x, y)| (*x as f64 - mx) * (y - my))
+            .sum::<f64>()
+            / n;
+        let sx = (rows
+            .iter()
+            .map(|(x, _)| (*x as f64 - mx).powi(2))
+            .sum::<f64>()
+            / n)
+            .sqrt();
         let sy = (rows.iter().map(|(_, y)| (y - my).powi(2)).sum::<f64>() / n).sqrt();
         cov / (sx * sy)
     };

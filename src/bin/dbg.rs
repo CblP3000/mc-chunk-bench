@@ -23,7 +23,13 @@ fn main() -> Result<()> {
 
     for (i, lc) in data.chunks.iter().enumerate() {
         let c = &lc.chunk;
-        println!("chunk {i}: x={} z={} secs={} min_y={}", c.x, c.z, c.sections.len(), c.section_min_y);
+        println!(
+            "chunk {i}: x={} z={} secs={} min_y={}",
+            c.x,
+            c.z,
+            c.sections.len(),
+            c.section_min_y
+        );
         let enc = mc.encode(c, &ctx);
         if enc.len() > 100 {
             println!("  enc head: {:02x?}", &enc[..32.min(enc.len())]);

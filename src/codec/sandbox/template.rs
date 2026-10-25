@@ -44,8 +44,8 @@ impl Codec for TemplateCodec {
         let mut idx: HashMap<u32, u8> = HashMap::new();
         for sec in &chunk.sections {
             for &b in &sec.blocks {
-                if !idx.contains_key(&b) {
-                    idx.insert(b, palette.len() as u8);
+                if let std::collections::hash_map::Entry::Vacant(e) = idx.entry(b) {
+                    e.insert(palette.len() as u8);
                     palette.push(b);
                 }
             }

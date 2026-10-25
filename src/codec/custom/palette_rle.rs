@@ -207,7 +207,7 @@ fn bits_needed(n: usize) -> u32 {
     if n <= 1 {
         0
     } else {
-        (usize::BITS - (n - 1).leading_zeros()) as u32
+        usize::BITS - (n - 1).leading_zeros()
     }
 }
 
@@ -328,8 +328,8 @@ impl<'a> Reader<'a> {
     }
     fn read_i32(&mut self) -> Result<i32> {
         let mut buf = [0u8; 4];
-        for i in 0..4 {
-            buf[i] = self.read_u8()?;
+        for b in buf.iter_mut() {
+            *b = self.read_u8()?;
         }
         Ok(i32::from_le_bytes(buf))
     }

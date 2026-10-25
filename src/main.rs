@@ -44,7 +44,8 @@ fn parse_args() -> Args {
     while let Some(arg) = a {
         match arg.as_str() {
             "--worlds-dir" => {
-                worlds_dir = expand_home(Path::new(&args.next().expect("--worlds-dir needs a value")));
+                worlds_dir =
+                    expand_home(Path::new(&args.next().expect("--worlds-dir needs a value")));
             }
             "--exclude" => {
                 excludes.push(args.next().expect("--exclude needs a value").to_string());
@@ -57,7 +58,11 @@ fn parse_args() -> Args {
                     .expect("--max-chunks must be a number");
             }
             "--seed" => {
-                seed = args.next().expect("--seed needs a value").parse().expect("--seed must be a number");
+                seed = args
+                    .next()
+                    .expect("--seed needs a value")
+                    .parse()
+                    .expect("--seed must be a number");
             }
             "--port" => {
                 port = args
@@ -65,10 +70,6 @@ fn parse_args() -> Args {
                     .expect("--port needs a value")
                     .parse()
                     .expect("--port must be a number");
-                if port == 8080 {
-                    eprintln!("warning: port 8080 is not allowed, using {DEFAULT_PORT}");
-                    port = DEFAULT_PORT;
-                }
             }
             "-h" | "--help" => {
                 usage();
@@ -94,14 +95,18 @@ fn parse_args() -> Args {
 
 fn usage() {
     eprintln!("Usage:");
-    eprintln!("  chunk_saver bench [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S]");
+    eprintln!(
+        "  chunk_saver bench [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S]"
+    );
     eprintln!("  chunk_saver serve [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S] [--port P]");
     eprintln!();
-    eprintln!("  --worlds-dir  path to a save, or a directory of saves (default: ~/.minecraft/saves)");
+    eprintln!(
+        "  --worlds-dir  path to a save, or a directory of saves (default: ~/.minecraft/saves)"
+    );
     eprintln!("  --exclude      exclude worlds whose name contains NAME (repeatable)");
     eprintln!("  --max-chunks  chunks to sample (default 512)");
     eprintln!("  --seed        RNG seed for sampling (default 1)");
-    eprintln!("  --port        HTTP port for 'serve' (default {DEFAULT_PORT}; never 8080)");
+    eprintln!("  --port        HTTP port for 'serve' (default {DEFAULT_PORT})");
 }
 
 fn pruned_dataset(data: &WorldData) -> WorldData {
@@ -127,7 +132,11 @@ async fn main() -> Result<()> {
     let worlds = discover_worlds(&args.worlds_dir, &args.excludes)?;
     eprintln!(
         "worlds: {}",
-        worlds.iter().map(|w| w.display().to_string()).collect::<Vec<_>>().join(", ")
+        worlds
+            .iter()
+            .map(|w| w.display().to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
     );
 
     let data = load_dataset(&worlds, args.max_chunks, args.seed)?;

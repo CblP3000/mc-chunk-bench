@@ -118,8 +118,8 @@ fn encode_palette(values: &[u32], out: &mut Vec<u8>) {
     let mut palette: Vec<u32> = Vec::new();
     let mut index_map: std::collections::HashMap<u32, u32> = std::collections::HashMap::new();
     for &v in values {
-        if !index_map.contains_key(&v) {
-            index_map.insert(v, palette.len() as u32);
+        if let std::collections::hash_map::Entry::Vacant(e) = index_map.entry(v) {
+            e.insert(palette.len() as u32);
             palette.push(v);
         }
     }
@@ -242,7 +242,7 @@ fn packbits_decode(data: &[u8]) -> Result<Vec<u8>> {
             }
             let byte = data[i];
             i += 1;
-            out.extend(std::iter::repeat(byte).take(run_len));
+            out.extend(std::iter::repeat_n(byte, run_len));
         }
         // control == 128: no-op, never emitted by our encoder
     }

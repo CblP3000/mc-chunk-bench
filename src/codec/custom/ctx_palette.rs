@@ -354,28 +354,28 @@ fn code_biome_indices(
     let mut probs = vec![PB_INIT; tw];
     let mut prev: usize = 0;
     let mut run: usize = 0;
-    for i in 0..idx.len() {
+    for x in idx.iter_mut() {
         let fctx = run.min(2);
         let want = if rc.enc {
-            (idx[i] as usize == prev) as u32
+            (*x as usize == prev) as u32
         } else {
             0
         };
         let b = rc.bit(&mut flags[fctx], want);
         if b == 1 {
             if !rc.enc {
-                idx[i] = prev as u16;
+                *x = prev as u16;
             }
             run = (run + 1).min(2);
         } else {
             run = 0;
-            let mut v: u32 = if rc.enc { idx[i] as u32 } else { 0 };
+            let mut v: u32 = if rc.enc { *x as u32 } else { 0 };
             rc.tree(&mut probs[..tw], nb, &mut v);
             if !rc.enc {
                 if v as usize >= ps {
                     bail!("ctx-palette: biome index out of range");
                 }
-                idx[i] = v as u16;
+                *x = v as u16;
             }
             prev = v as usize;
         }

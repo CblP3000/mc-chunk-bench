@@ -43,7 +43,10 @@ impl NbtValue {
     }
 
     pub fn get(&self, key: &str) -> Option<&NbtValue> {
-        self.as_compound()?.iter().find(|(k, _)| k == key).map(|(_, v)| v)
+        self.as_compound()?
+            .iter()
+            .find(|(k, _)| k == key)
+            .map(|(_, v)| v)
     }
 
     pub fn get_str(&self, key: &str) -> Option<&str> {

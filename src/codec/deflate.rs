@@ -57,7 +57,7 @@ impl Codec for DeflateCodec {
         let raw = self.inner.encode_tile(chunks, ctx);
         let mut enc = ZlibEncoder::new(Vec::new(), self.level);
         let _ = enc.write_all(&raw);
-        enc.finish().unwrap_or_else(|_| raw)
+        enc.finish().unwrap_or(raw)
     }
 
     fn decode_tile(&self, bytes: &[u8], ctx: &Ctx) -> Result<Vec<Chunk>> {

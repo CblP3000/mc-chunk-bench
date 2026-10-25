@@ -39,11 +39,17 @@ pub struct DatasetReport {
 
 impl DatasetReport {
     pub fn best_by_size(&self) -> Option<&CodecResult> {
-        self.results.iter().filter(|r| r.ok).min_by(|a, b| a.bytes_avg.total_cmp(&b.bytes_avg))
+        self.results
+            .iter()
+            .filter(|r| r.ok)
+            .min_by(|a, b| a.bytes_avg.total_cmp(&b.bytes_avg))
     }
 
     pub fn fastest_encode(&self) -> Option<&CodecResult> {
-        self.results.iter().filter(|r| r.ok).min_by(|a, b| a.encode_us_avg.total_cmp(&b.encode_us_avg))
+        self.results
+            .iter()
+            .filter(|r| r.ok)
+            .min_by(|a, b| a.encode_us_avg.total_cmp(&b.encode_us_avg))
     }
 }
 
@@ -71,11 +77,7 @@ pub fn chunks_equal(a: &Chunk, b: &Chunk) -> bool {
     true
 }
 
-fn run_dataset(
-    label: &str,
-    data: &WorldData,
-    pruned: Option<&WorldData>,
-) -> Result<DatasetReport> {
+fn run_dataset(label: &str, data: &WorldData, pruned: Option<&WorldData>) -> Result<DatasetReport> {
     let data_ref = pruned.unwrap_or(data);
     let chunks: Vec<&Chunk> = data_ref.chunks.iter().map(|c| &c.chunk).collect();
     let ctx = Ctx {
@@ -96,33 +98,33 @@ fn run_dataset(
             .into_iter()
             .map(|reg| {
                 let g = reg.codec.group_size();
-            let mut tiles: Vec<Vec<&Chunk>> = Vec::new();
-            if g == 1 {
-                tiles = chunks.iter().map(|c| vec![*c]).collect();
-            } else {
-                let mut run_start = 0usize;
-                while run_start < chunks.len() {
-                    let sig = (
-                        chunks[run_start].section_min_y,
-                        chunks[run_start].sections.len(),
-                    );
-                    let mut end = run_start;
-                    while end < chunks.len()
-                        && (chunks[end].section_min_y, chunks[end].sections.len()) == sig
-                    {
-                        end += 1;
+                let mut tiles: Vec<Vec<&Chunk>> = Vec::new();
+                if g == 1 {
+                    tiles = chunks.iter().map(|c| vec![*c]).collect();
+                } else {
+                    let mut run_start = 0usize;
+                    while run_start < chunks.len() {
+                        let sig = (
+                            chunks[run_start].section_min_y,
+                            chunks[run_start].sections.len(),
+                        );
+                        let mut end = run_start;
+                        while end < chunks.len()
+                            && (chunks[end].section_min_y, chunks[end].sections.len()) == sig
+                        {
+                            end += 1;
+                        }
+                        let mut i = run_start;
+                        while i + g <= end {
+                            tiles.push(chunks[i..i + g].to_vec());
+                            i += g;
+                        }
+                        run_start = end;
                     }
-                    let mut i = run_start;
-                    while i + g <= end {
-                        tiles.push(chunks[i..i + g].to_vec());
-                        i += g;
-                    }
-                    run_start = end;
                 }
-            }
-            (reg, tiles)
-        })
-        .collect();
+                (reg, tiles)
+            })
+            .collect();
 
     let mut results = Vec::new();
     for (reg, tiles) in g_codecs {
@@ -147,7 +149,7 @@ fn run_dataset(
             if tile.len() != g {
                 continue;
             }
-            let tile_refs: Vec<&Chunk> = tile.iter().copied().collect();
+            let tile_refs: Vec<&Chunk> = tile.to_vec();
             let t0 = Instant::now();
             let encoded = codec.encode_tile(&tile_refs, &ctx);
             encode_us += t0.elapsed().as_micros();
@@ -201,24 +203,28 @@ fn run_dataset(
             },
             bytes_min: if any_measured { bytes_min } else { 0 },
             bytes_max: if any_measured { bytes_max } else { 0 },
-            encode_us_avg: if any_measured { encode_us as f64 / n_units as f64 / g as f64 } else { 0.0 },
-            decode_us_avg: if any_measured { decode_us as f64 / n_units as f64 / g as f64 } else { 0.0 },
+            encode_us_avg: if any_measured {
+                encode_us as f64 / n_units as f64 / g as f64
+            } else {
+                0.0
+            },
+            decode_us_avg: if any_measured {
+                decode_us as f64 / n_units as f64 / g as f64
+            } else {
+                0.0
+            },
             ok,
             note,
         });
     }
 
-    let mut worlds: Vec<String> = data_ref
-        .chunks
-        .iter()
-        .map(|c| c.world.clone())
-        .collect();
+    let mut worlds: Vec<String> = data_ref.chunks.iter().map(|c| c.world.clone()).collect();
     worlds.sort();
     worlds.dedup();
 
     Ok(DatasetReport {
         label: label.to_string(),
-        n_chunks: n_chunks,
+        n_chunks,
         worlds,
         raw_bytes: raw_avg,
         results,

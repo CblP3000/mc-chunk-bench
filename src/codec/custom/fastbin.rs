@@ -1,15 +1,15 @@
 //! fastbin — byte-aligned codec tuned for very fast decode.
 //!
 //! Design principles:
-//!   * byte-aligned stream (no interleaved bit-level varints), so decode is
-//!     mostly memcpy / slice-fill / unrolled bit-unpacking;
-//!   * per-section modes with the cheapest decode path first:
-//!       0 = all-air section  (memset)
-//!       1 = uniform single block id (fill)
-//!       2 = exact copy of an earlier section (clone)
-//!       3 = palette + bit-packed indices (unrolled LUT decode)
-//!       4 = palette + byte-aligned RLE (slice fill)
-//!   * same cheap mode set for biomes (64 cells).
+//! * byte-aligned stream (no interleaved bit-level varints), so decode is
+//!   mostly memcpy / slice-fill / unrolled bit-unpacking;
+//! * per-section modes with the cheapest decode path first:
+//!   0 = all-air section  (memset)
+//!   1 = uniform single block id (fill)
+//!   2 = exact copy of an earlier section (clone)
+//!   3 = palette + bit-packed indices (unrolled LUT decode)
+//!   4 = palette + byte-aligned RLE (slice fill)
+//! * same cheap mode set for biomes (64 cells).
 //!
 //! The encoder picks the smallest representation, but strongly prefers modes
 //! with zero/cheap decode work (air, uniform, copy) whenever they are not
@@ -83,7 +83,7 @@ fn put_bitpacked(out: &mut Vec<u8>, vals: &[u32], bits: u32) {
     }
     let n = vals.len();
     let total_bits = n as u64 * bits as u64;
-    let total_bytes = ((total_bits + 7) / 8) as usize;
+    let total_bytes = total_bits.div_ceil(8) as usize;
     let start = out.len();
     out.resize(start + total_bytes, 0);
     let mut bit_off = 0u64;
@@ -110,7 +110,7 @@ fn put_bitpacked(out: &mut Vec<u8>, vals: &[u32], bits: u32) {
 /// Decode `count` raw indices of `bits` (no palette mapping).
 fn get_indices(bytes: &[u8], pos: &mut usize, count: usize, bits: u32, out: &mut [u32]) -> Result<()> {
     let total_bits = count as u64 * bits as u64;
-    let total_bytes = ((total_bits + 7) / 8) as usize;
+    let total_bytes = total_bits.div_ceil(8) as usize;
     if *pos + total_bytes > bytes.len() {
         bail!("fastbin: truncated bitpacked data");
     }
@@ -169,7 +169,7 @@ fn get_indices(bytes: &[u8], pos: &mut usize, count: usize, bits: u32, out: &mut
 /// bounds checks are needed; the stream length is checked up-front.
 fn get_palette_final(bytes: &[u8], pos: &mut usize, count: usize, bits: u32, pal: &[u32]) -> Result<Vec<u32>> {
     let total_bits = count as u64 * bits as u64;
-    let total_bytes = ((total_bits + 7) / 8) as usize;
+    let total_bytes = total_bits.div_ceil(8) as usize;
     if *pos + total_bytes > bytes.len() {
         bail!("fastbin: truncated bitpacked data");
     }
@@ -262,7 +262,7 @@ fn encode_blocks(out: &mut Vec<u8>, blocks: &[u32], seen: &[&[u32]]) {
         idx.push(i);
     }
     let bits = bits_for(pal.len() as u32);
-    let packed_bytes = (SEC_BLOCKS as u64 * bits as u64 + 7) / 8;
+    let packed_bytes = (SEC_BLOCKS as u64 * bits as u64).div_ceil(8);
 
     // RLE candidate cost
     let mut runs: Vec<(u32, u32)> = Vec::new();
@@ -387,7 +387,7 @@ fn decode_blocks(bytes: &[u8], pos: &mut usize, sections: &[Section]) -> Result<
         }
         3 | 4 => {
             let plen = get_varint(bytes, pos)? as usize;
-            if plen < 2 || plen > SEC_BLOCKS {
+            if !(2..=SEC_BLOCKS).contains(&plen) {
                 bail!("fastbin: bad palette length {plen}");
             }
             let mut pal = Vec::with_capacity(plen);
@@ -397,7 +397,7 @@ fn decode_blocks(bytes: &[u8], pos: &mut usize, sections: &[Section]) -> Result<
             let bits = bits_for(plen as u32);
             if mode == 3 {
                 let blocks = get_palette_final(bytes, pos, SEC_BLOCKS, bits, &pal)?;
-                return Ok(blocks);
+                Ok(blocks)
             } else {
                 let mut blocks = vec![0u32; SEC_BLOCKS];
                 let mut off = 0usize;
@@ -454,7 +454,7 @@ fn decode_biomes(bytes: &[u8], pos: &mut usize, sections: &[Section]) -> Result<
         }
         2 => {
             let plen = get_varint(bytes, pos)? as usize;
-            if plen < 2 || plen > SEC_BIOMES {
+            if !(2..=SEC_BIOMES).contains(&plen) {
                 bail!("fastbin: bad biome palette length {plen}");
             }
             let mut pal = Vec::with_capacity(plen);

@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "Benchmark of Minecraft chunk storage algorithms with web visualization"
 license = "MIT"
+authors = ["CblP3000"]
+keywords = ["minecraft", "compression", "codec", "benchmark", "chunk"]
+categories = ["compression", "game-development"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

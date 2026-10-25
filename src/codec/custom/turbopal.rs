@@ -340,8 +340,8 @@ impl Codec for TurboPalCodec {
                     let pal_len = (bytes[pos] as usize) + 1;
                     pos += 1;
                     let mut pal = [0u32; 2];
-                    for i in 0..pal_len {
-                        pal[i] = read_varint_u32(bytes, &mut pos)?;
+                    for p in pal.iter_mut().take(pal_len) {
+                        *p = read_varint_u32(bytes, &mut pos)?;
                     }
 
                     if pos + 512 > bytes.len() {
@@ -368,8 +368,8 @@ impl Codec for TurboPalCodec {
                     let pal_len = (bytes[pos] as usize) + 1;
                     pos += 1;
                     let mut pal = [0u32; 4];
-                    for i in 0..pal_len {
-                        pal[i] = read_varint_u32(bytes, &mut pos)?;
+                    for p in pal.iter_mut().take(pal_len) {
+                        *p = read_varint_u32(bytes, &mut pos)?;
                     }
 
                     if pos + 1024 > bytes.len() {
@@ -392,8 +392,8 @@ impl Codec for TurboPalCodec {
                     let pal_len = (bytes[pos] as usize) + 1;
                     pos += 1;
                     let mut pal = [0u32; 16];
-                    for i in 0..pal_len {
-                        pal[i] = read_varint_u32(bytes, &mut pos)?;
+                    for p in pal.iter_mut().take(pal_len) {
+                        *p = read_varint_u32(bytes, &mut pos)?;
                     }
 
                     if pos + 2048 > bytes.len() {
@@ -413,8 +413,8 @@ impl Codec for TurboPalCodec {
                     let pal_len = (bytes[pos] as usize) + 1;
                     pos += 1;
                     let mut pal = [0u32; 256];
-                    for i in 0..pal_len {
-                        pal[i] = read_varint_u32(bytes, &mut pos)?;
+                    for p in pal.iter_mut().take(pal_len) {
+                        *p = read_varint_u32(bytes, &mut pos)?;
                     }
 
                     if pos + 4096 > bytes.len() {
@@ -465,8 +465,8 @@ impl Codec for TurboPalCodec {
                     let pal_len = (bytes[pos] as usize) + 1;
                     pos += 1;
                     let mut pal = [0u16; 4];
-                    for i in 0..pal_len {
-                        pal[i] = read_varint_u32(bytes, &mut pos)? as u16;
+                    for p in pal.iter_mut().take(pal_len) {
+                        *p = read_varint_u32(bytes, &mut pos)? as u16;
                     }
                     if pos + 16 > bytes.len() {
                         bail!("Unexpected EOF reading 2-bit biomes");
@@ -488,8 +488,8 @@ impl Codec for TurboPalCodec {
                     let pal_len = (bytes[pos] as usize) + 1;
                     pos += 1;
                     let mut pal = [0u16; 16];
-                    for i in 0..pal_len {
-                        pal[i] = read_varint_u32(bytes, &mut pos)? as u16;
+                    for p in pal.iter_mut().take(pal_len) {
+                        *p = read_varint_u32(bytes, &mut pos)? as u16;
                     }
                     if pos + 32 > bytes.len() {
                         bail!("Unexpected EOF reading 4-bit biomes");

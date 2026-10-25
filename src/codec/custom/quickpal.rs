@@ -664,24 +664,15 @@ mod tests {
         // air
         sections.push(sec_from(&vec![0u32; 4096], &air_biomes));
         // uniform non-air
-        sections.push(sec_from(&vec![7u32; 4096], &vec![1u16; 64]));
+        sections.push(sec_from(&vec![7u32; 4096], &[1u16; 64]));
         // duplicate (backref)
-        sections.push(sec_from(&vec![7u32; 4096], &vec![1u16; 64]));
+        sections.push(sec_from(&vec![7u32; 4096], &[1u16; 64]));
         // 2-color checker (1bit / RLE)
-        let mut two = vec![0u32; 4096];
-        for i in 0..4096 {
-            two[i] = (i % 2) as u32;
-        }
-        sections.push(sec_from(&two, &vec![0u16; 64]));
+        let two: Vec<u32> = (0..4096).map(|i| (i % 2) as u32).collect();
+        sections.push(sec_from(&two, &[0u16; 64]));
         // 16-color blocky
-        let mut sixteen = vec![0u32; 4096];
-        for i in 0..4096 {
-            sixteen[i] = ((i / 64) % 16) as u32;
-        }
-        let mut bio16 = vec![0u16; 64];
-        for i in 0..64 {
-            bio16[i] = (i % 5) as u16;
-        }
+        let sixteen: Vec<u32> = (0..4096).map(|i| ((i / 64) % 16) as u32).collect();
+        let bio16: Vec<u16> = (0..64).map(|i| (i % 5) as u16).collect();
         sections.push(sec_from(&sixteen, &bio16));
         // noise with >16 colors (8bit)
         let mut rng = 999u64;
@@ -692,19 +683,16 @@ mod tests {
             rng ^= rng << 17;
             *v = 20 + (rng % 60) as u32;
         }
-        sections.push(sec_from(&noise, &vec![2u16; 64]));
+        sections.push(sec_from(&noise, &[2u16; 64]));
         // sparse-ish background + exceptions
         let mut sparse = vec![5u32; 4096];
         for i in (0..4096).step_by(11) {
             sparse[i] = 9;
         }
-        sections.push(sec_from(&sparse, &vec![0u16; 64]));
+        sections.push(sec_from(&sparse, &[0u16; 64]));
         // >256 unique (RAW)
-        let mut huge = vec![0u32; 4096];
-        for i in 0..4096 {
-            huge[i] = 300 + (i % 400) as u32;
-        }
-        sections.push(sec_from(&huge, &vec![0u16; 64]));
+        let huge: Vec<u32> = (0..4096).map(|i| 300 + (i % 400) as u32).collect();
+        sections.push(sec_from(&huge, &[0u16; 64]));
 
         let ch = Chunk {
             x: 0,

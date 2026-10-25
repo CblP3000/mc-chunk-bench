@@ -121,7 +121,7 @@ impl Codec for BitmaskZlibCodec {
             let mut blocks = vec![0u32; 4096];
             let mut val_idx = 0usize;
 
-            for i in 0..4096 {
+            for (i, b) in blocks.iter_mut().enumerate() {
                 let byte_idx = i >> 3;
                 let bit_idx = i & 7;
                 if (bitmask[byte_idx] >> bit_idx) & 1 == 1 {
@@ -131,7 +131,7 @@ impl Codec for BitmaskZlibCodec {
                         raw[p + val_idx * 4 + 2],
                         raw[p + val_idx * 4 + 3],
                     ]);
-                    blocks[i] = v;
+                    *b = v;
                     val_idx += 1;
                 }
             }
@@ -189,7 +189,7 @@ mod tests {
                     rng ^= rng << 13;
                     rng ^= rng >> 7;
                     rng ^= rng << 17;
-                    if rng % 4 != 0 {
+                    if !rng.is_multiple_of(4) {
                         sec.blocks[i] = ids[(rng % 30) as usize];
                     }
                 }

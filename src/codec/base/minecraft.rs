@@ -194,7 +194,7 @@ fn encode_section(section: &Section, ctx: &Ctx, out: &mut Vec<u8>) {
             .map(|b| index[b])
             .collect();
         let packed = pack_long_array(&indexed, bits);
-        out.extend(packed.iter().map(|v| v.to_be_bytes()).flatten());
+        out.extend(packed.iter().flat_map(|v| v.to_be_bytes()));
     }
 
     // Biome palette
@@ -215,7 +215,7 @@ fn encode_section(section: &Section, ctx: &Ctx, out: &mut Vec<u8>) {
     if bpal.len() > 1 {
         let indexed: Vec<u32> = section.biomes.iter().map(|b| bindex[b]).collect();
         let packed = pack_long_array(&indexed, bbits);
-        out.extend(packed.iter().map(|v| v.to_be_bytes()).flatten());
+        out.extend(packed.iter().flat_map(|v| v.to_be_bytes()));
     }
 }
 

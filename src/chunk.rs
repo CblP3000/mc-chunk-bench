@@ -64,7 +64,11 @@ fn unpack_long_array(data: &[i64], count: usize, bits: u32) -> Vec<u32> {
     if bits == 0 {
         return vec![0; count];
     }
-    let mask = if bits >= 32 { u64::MAX } else { (1u64 << bits) - 1 };
+    let mask = if bits >= 32 {
+        u64::MAX
+    } else {
+        (1u64 << bits) - 1
+    };
     let mut out = Vec::with_capacity(count);
     for i in 0..count {
         let bit_index = i as u64 * bits as u64;
@@ -166,7 +170,7 @@ fn parse_modern_chunk(
                         let props = p
                             .get("Properties")
                             .and_then(|pr| pr.as_compound())
-                            .map(|pr| pr.clone())
+                            .cloned()
                             .unwrap_or_default();
                         intern(&canonical_state(name, &props))
                     })
@@ -354,7 +358,7 @@ pub fn prune_interior(chunk: &mut Chunk) -> usize {
     let idx = |x: usize, y: usize, z: usize| y * w * w + z * w + x;
     let bi = |x: i32, y: i32, z: i32| -> Option<(usize, usize, usize)> {
         if x >= 0 && (x as usize) < w && z >= 0 && (z as usize) < w {
-            let y = y as i32 - chunk.section_min_y;
+            let y = y - chunk.section_min_y;
             if y >= 0 && (y as usize) < h {
                 return Some((x as usize, y as usize, z as usize));
             }
@@ -496,7 +500,10 @@ mod tests {
     }
 
     fn solid_section(id: u32) -> Section {
-        Section { blocks: vec![id; SECTION_BLOCKS], biomes: vec![0u16; SECTION_BIOMES] }
+        Section {
+            blocks: vec![id; SECTION_BLOCKS],
+            biomes: vec![0u16; SECTION_BIOMES],
+        }
     }
 
     #[test]
