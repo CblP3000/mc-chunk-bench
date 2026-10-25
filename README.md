@@ -15,10 +15,26 @@ cargo run --release --bin chunk_saver -- bench --max-chunks 512
 cargo run --release --bin chunk_saver -- serve --port 8095
 
 # параметры
-#   --world DIR      путь к сейву или папке saves (default: /mnt/D/lol/.minecraft/home/Fabric 1.21.11/saves)
-#   --max-chunks N   сколько чанков сэмплировать (default 512)
-#   --seed S         детерминированная выборка
-#   --port P         порт HTTP (default 8095; 8080 запрещён)
+#   --worlds-dir DIR  путь к сейву или папке saves (default: ~/.minecraft/saves)
+#   --exclude NAME    исключить миры, в имени которых есть NAME (можно повторять)
+#   --max-chunks N    сколько чанков сэмплировать (default 512)
+#   --seed S          детерминированная выборка
+#   --port P          порт HTTP (default 8095; 8080 запрещён)
+```
+
+Если ваш `.minecraft` лежит не в `~/` (например, на отдельном диске),
+укажите путь явно:
+
+```bash
+cargo run --release --bin chunk_saver -- bench --worlds-dir "D:/games/.minecraft/saves"
+```
+
+По умолчанию из выборки исключаются миры с именами, содержащими
+`плоский`, `flat` или `2b2t` (они искажают картину сжатия). Добавьте свои
+исключения через `--exclude` (повторяемый флаг), например:
+
+```bash
+cargo run --release --bin chunk_saver -- bench --exclude creative --exclude test
 ```
 
 После `serve` откройте http://localhost:8095 — график, таблица, карточки

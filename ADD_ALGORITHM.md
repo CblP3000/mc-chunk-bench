@@ -161,9 +161,10 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     **Для своего алгоритма добавьте аналогичную проверку** — например,
     вынесите общий хелпер `synthetic`-чанка и прогоните через `MyAlgo`.
 
-3. **Реальный тест на чанках из миров** (`cargo run --release --bin dbg`):
-   читает настоящие сейвы (путь по умолчанию — `/mnt/D/lol/.minecraft/home/Fabric 1.21.11/saves`)
-   и проверяет round-trip для `minecraft` и `layered`.
+ 3. **Реальный тест на чанках из миров** (`cargo run --release --bin dbg`):
+   читает настоящие сейвы (путь по умолчанию — `~/.minecraft/saves`,
+   можно передать явно первым аргументом) и проверяет round-trip для
+   `minecraft` и `layered`.
    Свой алгоритм подключите так же: добавьте в `src/bin/dbg.rs`
    инициализацию и проверку `chunks_equal`.
 
@@ -171,8 +172,11 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
    ```bash
    cargo run --release --bin chunk_saver -- bench --max-chunks 512
    ```
-   Он замерит encode/decode время, размер и **проверит round-trip для всех
-   алгоритмов из реестра**. Если `ok=false` — в отчёте будет причина
+   По умолчанию миры берутся из `~/.minecraft/saves`; если они лежат в другом
+   месте, укажите путь через `--worlds-dir DIR` (исключения миров — через
+   повторяемый `--exclude NAME`, см. README). Он замерит encode/decode время,
+   размер и **проверит round-trip для всех алгоритмов из реестра**. Если
+   `ok=false` — в отчёте будет причина
    (decode-ошибка или несовпадение данных). После исправления запустите
    `serve`:
    ```bash

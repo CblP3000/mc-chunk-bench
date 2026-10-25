@@ -3,9 +3,12 @@ use chunk_saver::codec::{Codec, Ctx};
 use chunk_saver::world::{discover_worlds, load_dataset};
 
 fn main() -> Result<()> {
-    let worlds = discover_worlds(std::path::Path::new(
-        "/mnt/D/lol/.minecraft/home/Fabric 1.21.11/saves",
-    ))?;
+    let dir = std::env::args().nth(1).unwrap_or_else(|| {
+        std::env::var_os("HOME")
+            .map(|h| format!("{}/.minecraft/saves", h.to_string_lossy()))
+            .unwrap_or_default()
+    });
+    let worlds = discover_worlds(std::path::Path::new(&dir), &[])?;
     let data = load_dataset(&worlds, 512, 1)?;
     let regs = chunk_saver::codec::all_registrations(true);
     let reg = regs.iter().find(|r| r.codec.id() == "rle-column+deflate12").unwrap();

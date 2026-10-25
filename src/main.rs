@@ -3,14 +3,30 @@ use chunk_saver::bench::run_benchmark;
 use chunk_saver::chunk::prune_interior;
 use chunk_saver::web;
 use chunk_saver::world::{discover_worlds, load_dataset, WorldData};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-const DEFAULT_SAVES: &str = "/mnt/D/lol/.minecraft/home/Fabric 1.21.11/saves";
 const DEFAULT_PORT: u16 = 8095;
+
+fn default_saves_dir() -> PathBuf {
+    std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_default()
+        .join(".minecraft/saves")
+}
+
+fn expand_home(p: &Path) -> PathBuf {
+    if let Some(rest) = p.to_str().and_then(|s| s.strip_prefix("~/")) {
+        if let Some(home) = std::env::var_os("HOME") {
+            return PathBuf::from(home).join(rest);
+        }
+    }
+    p.to_path_buf()
+}
 
 struct Args {
     cmd: String,
-    world: PathBuf,
+    worlds_dir: PathBuf,
+    excludes: Vec<String>,
     max_chunks: usize,
     seed: u64,
     port: u16,
@@ -19,15 +35,19 @@ struct Args {
 fn parse_args() -> Args {
     let mut args = std::env::args().skip(1);
     let cmd = args.next().unwrap_or_else(|| "bench".to_string());
-    let mut world = PathBuf::from(DEFAULT_SAVES);
+    let mut worlds_dir = default_saves_dir();
+    let mut excludes: Vec<String> = Vec::new();
     let mut max_chunks = 512usize;
     let mut seed = 1u64;
     let mut port = DEFAULT_PORT;
     let mut a = args.next();
     while let Some(arg) = a {
         match arg.as_str() {
-            "--world" => {
-                world = PathBuf::from(args.next().expect("--world needs a value"));
+            "--worlds-dir" => {
+                worlds_dir = expand_home(Path::new(&args.next().expect("--worlds-dir needs a value")));
+            }
+            "--exclude" => {
+                excludes.push(args.next().expect("--exclude needs a value").to_string());
             }
             "--max-chunks" => {
                 max_chunks = args
@@ -56,7 +76,7 @@ fn parse_args() -> Args {
             }
             other => {
                 if !other.starts_with('-') {
-                    world = PathBuf::from(other);
+                    worlds_dir = expand_home(Path::new(other));
                 }
             }
         }
@@ -64,7 +84,8 @@ fn parse_args() -> Args {
     }
     Args {
         cmd,
-        world,
+        worlds_dir,
+        excludes,
         max_chunks,
         seed,
         port,
@@ -73,10 +94,11 @@ fn parse_args() -> Args {
 
 fn usage() {
     eprintln!("Usage:");
-    eprintln!("  chunk_saver bench [--world DIR] [--max-chunks N] [--seed S]");
-    eprintln!("  chunk_saver serve [--world DIR] [--max-chunks N] [--seed S] [--port P]");
+    eprintln!("  chunk_saver bench [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S]");
+    eprintln!("  chunk_saver serve [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S] [--port P]");
     eprintln!();
-    eprintln!("  --world       path to a save, or a directory of saves (default: {DEFAULT_SAVES})");
+    eprintln!("  --worlds-dir  path to a save, or a directory of saves (default: ~/.minecraft/saves)");
+    eprintln!("  --exclude      exclude worlds whose name contains NAME (repeatable)");
     eprintln!("  --max-chunks  chunks to sample (default 512)");
     eprintln!("  --seed        RNG seed for sampling (default 1)");
     eprintln!("  --port        HTTP port for 'serve' (default {DEFAULT_PORT}; never 8080)");
@@ -102,7 +124,7 @@ fn pruned_dataset(data: &WorldData) -> WorldData {
 async fn main() -> Result<()> {
     let args = parse_args();
 
-    let worlds = discover_worlds(&args.world)?;
+    let worlds = discover_worlds(&args.worlds_dir, &args.excludes)?;
     eprintln!(
         "worlds: {}",
         worlds.iter().map(|w| w.display().to_string()).collect::<Vec<_>>().join(", ")
