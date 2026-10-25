@@ -88,6 +88,10 @@ fn main() {
     let codec_dir = Path::new(&manifest_dir).join("src").join("codec");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR");
 
+    // Watch the whole tree: new/removed codec files must trigger a rebuild
+    // without requiring `cargo clean`.
+    println!("cargo:rerun-if-changed={}", codec_dir.display());
+
     let mut files: Vec<(Vec<String>, String)> = Vec::new();
     collect_rs(&codec_dir, &codec_dir, &mut files);
     files.sort();
