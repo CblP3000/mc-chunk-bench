@@ -767,7 +767,6 @@ mod tests {
             biome_block_lists: &[vec![]],
         };
 
-        let airbio = vec![0u16; 64];
         let mut sections = Vec::new();
         sections.push(Section::air());
         let mut mono = Section::air();

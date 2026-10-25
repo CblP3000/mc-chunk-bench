@@ -394,7 +394,6 @@ fn encode_layer_best(
         pal.dedup();
         let pc = layer_adaptive_cost_bits(cells, None, Some(&pal));
         if pc < best_bits {
-            best_bits = pc;
             best = 1;
             best_list_sel = 2;
             best_pal = Some(pal);

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chunk_saver::codec::{Codec, Ctx};
+use chunk_saver::codec::Ctx;
 use chunk_saver::world::{discover_worlds, load_dataset};
 
 fn main() -> Result<()> {

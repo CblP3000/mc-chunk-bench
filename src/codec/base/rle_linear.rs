@@ -8,7 +8,7 @@
 //! Runs of equal blocks are stored as (length, block-id) pairs. Biome data is
 //! stored after the runs (64 x u16 per section).
 
-use crate::chunk::{Chunk, Section, SECTION_BIOMES, SECTION_BLOCKS};
+use crate::chunk::{Chunk, Section, SECTION_BIOMES};
 use crate::codec::{Codec, Ctx, RegistryEntry};
 use anyhow::{bail, Result};
 
@@ -73,14 +73,6 @@ fn read_varint(bytes: &[u8], pos: &mut usize) -> Result<u32> {
 }
 
 impl RleLinearCodec {
-    /// Linear index of block (local y, z, x) inside the whole-chunk line.
-    fn cell_index(&self, height: usize, local_y: usize, z: usize, x: usize) -> usize {
-        match self.order {
-            ScanOrder::XyzUp => x * height * 16 + local_y * 16 + z,
-            ScanOrder::XyzDown => x * height * 16 + (height - 1 - local_y) * 16 + z,
-        }
-    }
-
     fn block_at(&self, chunk: &Chunk, height: usize, idx: usize) -> u32 {
         // inverse of cell_index
         let x = idx / (height * 16);

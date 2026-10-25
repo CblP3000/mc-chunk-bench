@@ -554,7 +554,6 @@ mod tests {
             biome_block_lists: &[vec![]],
         };
 
-        let air_biomes = vec![0u16; 64];
         let mut sections = Vec::new();
 
         sections.push(Section::air());

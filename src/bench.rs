@@ -2,7 +2,7 @@
 //! round-trips, collect size + time metrics.
 
 use crate::chunk::Chunk;
-use crate::codec::{Codec, Ctx};
+use crate::codec::Ctx;
 use crate::world::WorldData;
 use anyhow::Result;
 use serde::Serialize;

@@ -59,7 +59,6 @@ fn collect_rs(dir: &Path, base: &Path, out: &mut Vec<(Vec<String>, String)>) {
                     continue;
                 }
                 let rel = path.strip_prefix(base).unwrap();
-                let rel_str = rel.display().to_string();
                 let mut parts: Vec<String> = rel
                     .with_extension("")
                     .display()
