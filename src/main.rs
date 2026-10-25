@@ -34,47 +34,45 @@ struct Args {
 }
 
 fn parse_args() -> Args {
-    let mut args = std::env::args().skip(1);
-    let cmd = args.next().unwrap_or_else(|| "bench".to_string());
+    let argv: Vec<String> = std::env::args().skip(1).collect();
+    let mut i = 0;
+    let cmd = match argv.first() {
+        Some(a) if !a.starts_with('-') => {
+            i += 1;
+            a.clone()
+        }
+        _ => "bench".to_string(),
+    };
     let mut worlds_dir = default_saves_dir();
     let mut excludes: Vec<String> = Vec::new();
     let mut max_chunks = 512usize;
     let mut seed = 1u64;
     let mut port = DEFAULT_PORT;
     let mut host = String::from("127.0.0.1");
-    let mut a = args.next();
-    while let Some(arg) = a {
+    while let Some(arg) = argv.get(i) {
+        i += 1;
+        let mut next = || {
+            i += 1;
+            argv.get(i - 1).cloned().expect("missing argument value")
+        };
         match arg.as_str() {
             "--worlds-dir" => {
-                worlds_dir =
-                    expand_home(Path::new(&args.next().expect("--worlds-dir needs a value")));
+                worlds_dir = expand_home(Path::new(&next()));
             }
             "--exclude" => {
-                excludes.push(args.next().expect("--exclude needs a value").to_string());
+                excludes.push(next());
             }
             "--max-chunks" => {
-                max_chunks = args
-                    .next()
-                    .expect("--max-chunks needs a value")
-                    .parse()
-                    .expect("--max-chunks must be a number");
+                max_chunks = next().parse().expect("--max-chunks must be a number");
             }
             "--seed" => {
-                seed = args
-                    .next()
-                    .expect("--seed needs a value")
-                    .parse()
-                    .expect("--seed must be a number");
+                seed = next().parse().expect("--seed must be a number");
             }
             "--port" => {
-                port = args
-                    .next()
-                    .expect("--port needs a value")
-                    .parse()
-                    .expect("--port must be a number");
+                port = next().parse().expect("--port must be a number");
             }
             "--host" => {
-                host = args.next().expect("--host needs a value").to_string();
+                host = next();
             }
             "-h" | "--help" => {
                 usage();
@@ -86,7 +84,6 @@ fn parse_args() -> Args {
                 }
             }
         }
-        a = args.next();
     }
     Args {
         cmd,
