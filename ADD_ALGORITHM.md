@@ -170,7 +170,7 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 
 4. **Полный бенчмарк** (самый важный тест):
    ```bash
-   cargo run --release --bin chunk_saver -- bench --max-chunks 512
+   cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512
    ```
    По умолчанию миры берутся из `~/.minecraft/saves`; если они лежат в другом
    месте, укажите путь через `--worlds-dir DIR` (исключения миров — через
@@ -180,7 +180,7 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
    (decode-ошибка или несовпадение данных). После исправления запустите
    `serve`:
    ```bash
-   cargo run --release --bin chunk_saver -- serve --port 8085
+   cargo run --release --bin mc-chunk-bench -- serve --port 8085
    ```
    Новый алгоритм появится на графиках и в таблице автоматически.
 
@@ -194,9 +194,9 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 - [ ] `src/codec/mod.rs` **не изменялся** (это проверено тестом ниже).
 - [ ] `cargo build --release` собирается без ошибок (build.rs сам подхватил файл).
 - [ ] `cargo test` проходит.
-- [ ] `cargo run --release --bin chunk_saver -- bench --max-chunks 512`
+- [ ] `cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512`
       показывает `ok=true` для нового алгоритма (round-trip OK) и id в списке.
-- [ ] `cargo run --release --bin chunk_saver -- serve --port 8085` — алгоритм
+- [ ] `cargo run --release --bin mc-chunk-bench -- serve --port 8085` — алгоритм
       виден на странице.
 
 ---

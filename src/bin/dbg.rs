@@ -1,7 +1,7 @@
 use anyhow::Result;
-use chunk_saver::bench::chunks_equal;
-use chunk_saver::codec::{Codec, Ctx};
-use chunk_saver::world::{discover_worlds, load_dataset};
+use mc_chunk_bench::bench::chunks_equal;
+use mc_chunk_bench::codec::{Codec, Ctx};
+use mc_chunk_bench::world::{discover_worlds, load_dataset};
 
 fn main() -> Result<()> {
     let dir = std::env::args().nth(1).unwrap_or_else(|| {
@@ -16,9 +16,9 @@ fn main() -> Result<()> {
         biomes: &data.biomes,
         biome_block_lists: &data.biome_block_lists,
     };
-    let mc = chunk_saver::codec::base::minecraft::MinecraftCodec;
-    let layered = chunk_saver::codec::base::layered::LayeredCodec::new(
-        chunk_saver::codec::base::layered::LayeredConfig::default(),
+    let mc = mc_chunk_bench::codec::base::minecraft::MinecraftCodec;
+    let layered = mc_chunk_bench::codec::base::layered::LayeredCodec::new(
+        mc_chunk_bench::codec::base::layered::LayeredConfig::default(),
     );
 
     for (i, lc) in data.chunks.iter().enumerate() {

@@ -1,6 +1,6 @@
 use anyhow::Result;
-use chunk_saver::codec::Ctx;
-use chunk_saver::world::{discover_worlds, load_dataset};
+use mc_chunk_bench::codec::Ctx;
+use mc_chunk_bench::world::{discover_worlds, load_dataset};
 
 fn main() -> Result<()> {
     let dir = std::env::args().nth(1).unwrap_or_else(|| {
@@ -10,7 +10,7 @@ fn main() -> Result<()> {
     });
     let worlds = discover_worlds(std::path::Path::new(&dir), &[])?;
     let data = load_dataset(&worlds, 512, 1)?;
-    let regs = chunk_saver::codec::all_registrations(true);
+    let regs = mc_chunk_bench::codec::all_registrations(true);
     let reg = regs
         .iter()
         .find(|r| r.codec.id() == "rle-column+deflate12")

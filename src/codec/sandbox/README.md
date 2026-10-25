@@ -15,7 +15,7 @@ JSON-отчёте и веб-UI.
 
    ```bash
    cargo test
-   cargo run --release --bin chunk_saver -- bench --max-chunks 512
+   cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512
    ```
 
    В отчёте у нового алгоритма должно быть `ok=true`.

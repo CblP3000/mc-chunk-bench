@@ -7,7 +7,7 @@
 //!    палитра на чанк + 1 байт индекса на блок).
 //! 3. Заполните `REGISTRY` внизу (сейчас пуст — в бенчмарк не попадает).
 //! 4. Проверьте: `cargo test` и
-//!    `cargo run --release --bin chunk_saver -- bench --max-chunks 512`
+//!    `cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512`
 //!    (для нового алгоритма должно быть `ok=true`).
 //! 5. Удался — `git mv` в `src/codec/custom/`; нет — удалите файл.
 

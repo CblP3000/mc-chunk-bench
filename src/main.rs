@@ -1,8 +1,8 @@
 use anyhow::Result;
-use chunk_saver::bench::run_benchmark;
-use chunk_saver::chunk::prune_interior;
-use chunk_saver::web;
-use chunk_saver::world::{discover_worlds, load_dataset, WorldData};
+use mc_chunk_bench::bench::run_benchmark;
+use mc_chunk_bench::chunk::prune_interior;
+use mc_chunk_bench::web;
+use mc_chunk_bench::world::{discover_worlds, load_dataset, WorldData};
 use std::path::{Path, PathBuf};
 
 const DEFAULT_PORT: u16 = 8095;
@@ -102,9 +102,9 @@ fn parse_args() -> Args {
 fn usage() {
     eprintln!("Usage:");
     eprintln!(
-        "  chunk_saver bench [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S]"
+        "  mc-chunk-bench bench [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S]"
     );
-    eprintln!("  chunk_saver serve [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S] [--host H] [--port P]");
+    eprintln!("  mc-chunk-bench serve [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S] [--host H] [--port P]");
     eprintln!();
     eprintln!(
         "  --worlds-dir  path to a save, or a directory of saves (default: ~/.minecraft/saves)"

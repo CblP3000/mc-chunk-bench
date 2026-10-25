@@ -165,7 +165,7 @@ impl Codec for MyAlgoCodec {
 ## 9. Проверка валидности
 
 Алгоритм валиден, если проект собирается (`cargo build --release`) и в выводе
-`cargo run --release --bin chunk_saver -- bench --max-chunks 512` его `id`
+`cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512` его `id`
 присутствует с `ok=true`. Остальное (сборка, запуск, анализ) делает пользователь.
 
 ## 10. Распространённые причины провала

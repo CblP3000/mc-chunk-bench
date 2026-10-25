@@ -1,9 +1,9 @@
 use anyhow::Result;
-use chunk_saver::bench::chunks_equal;
-use chunk_saver::chunk::{Chunk, Section, SECTION_BLOCKS};
-use chunk_saver::codec::base::layered::{LayeredCodec, LayeredConfig};
-use chunk_saver::codec::{Codec, Ctx};
-use chunk_saver::world::{BiomeRegistry, BlockRegistry};
+use mc_chunk_bench::bench::chunks_equal;
+use mc_chunk_bench::chunk::{Chunk, Section, SECTION_BLOCKS};
+use mc_chunk_bench::codec::base::layered::{LayeredCodec, LayeredConfig};
+use mc_chunk_bench::codec::{Codec, Ctx};
+use mc_chunk_bench::world::{BiomeRegistry, BlockRegistry};
 
 fn synthetic(blocks: &[u32], n_sec: usize) -> Chunk {
     let mut sections = Vec::with_capacity(n_sec);

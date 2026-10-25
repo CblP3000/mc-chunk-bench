@@ -1,5 +1,5 @@
 [package]
-name = "chunk_saver"
+name = "mc-chunk-bench"
 version = "0.1.0"
 edition = "2021"
 description = "Benchmark of Minecraft chunk storage algorithms with web visualization"

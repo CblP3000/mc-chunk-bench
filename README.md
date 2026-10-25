@@ -1,4 +1,4 @@
-# chunk_saver — бенчмарк алгоритмов хранения чанков Minecraft
+# mc-chunk-bench — бенчмарк алгоритмов хранения чанков Minecraft
 
 Rust-приложение: читает **реальные миры** из `.minecraft/saves`, выгружает чанки
 (современный 1.18+ формат и легаси 1.12), прогоняет наборы алгоритмов компрессии,
@@ -11,10 +11,10 @@ Rust-приложение: читает **реальные миры** из `.min
 
 ```bash
 # 1) Бенчмарк → JSON в stdout
-cargo run --release --bin chunk_saver -- bench --max-chunks 512
+cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512
 
 # 2) Веб-интерфейс (по умолчанию порт 8095)
-cargo run --release --bin chunk_saver -- serve --port 8095
+cargo run --release --bin mc-chunk-bench -- serve --port 8095
 ```
 
 Параметры:
@@ -32,13 +32,13 @@ cargo run --release --bin chunk_saver -- serve --port 8095
 укажите путь явно:
 
 ```bash
-cargo run --release --bin chunk_saver -- bench --worlds-dir "D:/games/.minecraft/saves"
+cargo run --release --bin mc-chunk-bench -- bench --worlds-dir "D:/games/.minecraft/saves"
 ```
 
 Исключите миры через `--exclude` (повторяемый флаг):
 
 ```bash
-cargo run --release --bin chunk_saver -- bench --exclude creative --exclude test
+cargo run --release --bin mc-chunk-bench -- bench --exclude creative --exclude test
 ```
 
 После `serve` откройте http://localhost:8095.
@@ -108,7 +108,7 @@ cargo run --release --bin chunk_saver -- bench --exclude creative --exclude test
 
 1. Реализуйте `trait Codec` в новом файле `src/codec/sandbox/my_algo.rs`.
 2. Объявите `pub const REGISTRY: &[RegistryEntry]`.
-3. Проверьте: `cargo test` и `cargo run --release --bin chunk_saver -- bench --max-chunks 512` (должно быть `ok=true`).
+3. Проверьте: `cargo test` и `cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512` (должно быть `ok=true`).
 4. Алгоритм автоматически появится в бенчмарке и на графиках.
 
 ## Тесты
