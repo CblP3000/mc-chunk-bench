@@ -25,6 +25,7 @@
     --axis:#818792;
     --origbar:#7aa2f7;
     --prunbar:#f2a65a;
+    --dec:#f2a65a;
     --grad:linear-gradient(135deg, var(--gold), var(--violet));
   }
   [data-theme="plum"] {
@@ -114,6 +115,7 @@
     --gold:#7aa2f7; --coral:#9aa5b1; --mint:#9aa5b1; --violet:#7aa2f7;
     --red:#f28f8f; --ok:#a8c8a8;
     --grid:#2b2e36; --axis:#818792; --origbar:#7aa2f7; --prunbar:#f2a65a;
+    --dec:#f2a65a;
     --grad:linear-gradient(135deg, var(--gold), var(--violet));
   }
   * { box-sizing:border-box; }
@@ -133,7 +135,7 @@
     color:var(--gold); font-weight:600; margin-bottom:6px; }
   h1 { margin:0; font-size:21px; font-weight:700; letter-spacing:-.01em; line-height:1.2; }
   h1 em { font-style:normal; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
-  .sub { color:var(--mut); font-size:12.5px; margin-top:6px; max-width:900px; }
+  .sub { color:var(--mut); font-size:12.5px; margin-top:6px; }
   .sub b { color:var(--ink); font-weight:600; }
 
   .hero { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:16px; }
@@ -235,14 +237,18 @@
   .algchip input { width:14px; height:14px; accent-color:var(--gold); cursor:pointer; }
   .algchip.off { opacity:.45; text-decoration:line-through; }
   .rubber { fill:color-mix(in srgb, var(--violet) 18%, transparent); stroke:var(--violet); stroke-width:1; pointer-events:none; }
-  .zoomreset { color:var(--gold); cursor:pointer; text-decoration:underline dotted; font-size:12px; margin-left:8px; }
+  .btn { background:var(--panel2); color:var(--gold); border:1px solid var(--line2);
+    border-radius:8px; padding:5px 12px; font-size:12.5px; outline:none;
+    cursor:pointer; transition:border-color .15s, color .15s; }
+  .btn:hover { border-color:var(--gold); }
+  .stools { display:flex; justify-content:flex-end; margin-bottom:8px; }
 
   /* chart element paint classes */
   .cg { stroke:var(--grid); } .ct { fill:var(--axis); }
   .clbl { fill:var(--ink); pointer-events:none; }
   .panel svg line { pointer-events:none; }
   .panel svg text { pointer-events:none; }
-  .penc { fill:var(--gold); } .pdec { fill:var(--violet); }
+  .penc { fill:var(--gold); } .pdec { fill:var(--dec, var(--violet)); }
   .porig { fill:var(--origbar); } .pprun { fill:var(--prunbar); }
 
   @media (max-width:1180px){ .grid2{grid-template-columns:1fr;} .hero{grid-template-columns:repeat(2,1fr);} }
@@ -257,7 +263,6 @@
   <div class="sub" id="meta">загрузка…</div>
 </header>
 
-<div class="hero lw" id="hero"></div>
 <div class="cards lw" id="cards"></div>
 <div class="setpanel lw" id="setpanel">
   <div class="sethead" id="sethead">
@@ -385,16 +390,16 @@ function vis(d){ return d.results.filter(r => (!r.gzip_extra || GZIP) && !DISABL
 async function init(){
   const r = await fetch('/api/report');
   REPORT = await r.json();
+  const metaParts = [
+    `миров: <b>${esc(REPORT.world_dirs.join(', '))}</b>`,
+    `чанков: <b>${fmt(REPORT.max_chunks)}</b>`,
+    `всего блоков: <b>${fmt(REPORT.total_blocks)}</b>`,
+    `глобальный список блоков: <b>${fmt(REPORT.global_blocks)}</b>`,
+    `биомов: <b>${fmt(REPORT.biomes)}</b>`,
+    `seed: ${esc(String(REPORT.seed))}`,
+  ];
   document.getElementById('meta').innerHTML =
-    `миров: <b>${esc(REPORT.world_dirs.join(', '))}</b> · чанков: <b>${fmt(REPORT.max_chunks)}</b> · всего блоков: <b>${fmt(REPORT.total_blocks)}</b> · глобальный список блоков: <b>${fmt(REPORT.global_blocks)}</b> · биомов: <b>${fmt(REPORT.biomes)}</b> · seed: ${REPORT.seed}`;
-
-  const hero = document.getElementById('hero');
-  hero.innerHTML = [
-    ['миров', esc(REPORT.world_dirs.length)],
-    ['чанков в выборке', fmt(REPORT.max_chunks)],
-    ['блоков всего', fmt(REPORT.total_blocks)],
-    ['глобальный список блоков', fmt(REPORT.global_blocks)],
-  ].map(([k, v], i) => `<div class="cell${i === 3 ? ' accent' : ''}"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+    metaParts.map(p => `<span style="white-space:nowrap">${p}</span>`).join(' · ');
 
   const tabs = document.getElementById('tabs');
   REPORT.datasets.forEach((d, i) => {
@@ -480,13 +485,13 @@ function render(){
   const d = REPORT.datasets[ACTIVE];
   const groups = [...new Set(vis(d).map(r => r.group))].sort();
   document.getElementById('mainlegend').innerHTML =
-    groups.map(g => `<span><span class="sw circ" style="background:${groupColor(g)}"></span>${esc(g)}</span>`).join('') +
-    `<span style="color:var(--mut2)">(цвет группы генерируется автоматически)</span>`;
+    groups.map(g => `<span><span class="sw circ" style="background:${groupColor(g)}"></span>${esc(g)}</span>`).join('');
   renderCards(d);
   renderScatter(d);
   renderSizeAcrossDatasets();
   renderTimeBars(d);
   renderRatioBars(d);
+  renderPruneGain();
   renderTable(d);
 }
 
@@ -522,8 +527,7 @@ function renderScatter(d){
   host.innerHTML = '';
   const panel = document.createElement('div'); panel.className = 'panel';
   panel.innerHTML = `<span class="kicker">Главный график</span>
-    <h2>Коэффициент сжатия (лог-шкала) × время (${METRIC === 'encode' ? 'encode' : METRIC === 'decode' ? 'decode' : 'encode+decode'})</h2>
-    <div class="hint">точка = алгоритм (наведите для деталей). Жёлтая линия — фронт лучших: строится от самого быстрого и не опускается вниз (по коэффициенту сжатия). Подписаны только точки фронта. Перетащите мышью по графику, чтобы приблизить область<span class="zoomreset" id="zoomreset">сброс приближения</span></div>`;
+    <div class="stools"><button id="zoomreset" class="btn">Сброс приближения</button></div>`;
   const W = 1120, H = 520, ML = 70, MR = 30, MT = 24, MB = 46;
   const iw = W - ML - MR, ih = H - MT - MB;
   const okRes = vis(d).filter(r => r.ok && r.id !== 'raw');
@@ -567,7 +571,8 @@ function renderScatter(d){
     s += `<line x1="${ML}" y1="${yv}" x2="${W-MR}" y2="${yv}" class="cg"/>`;
     s += `<text x="${ML-8}" y="${yv+4}" text-anchor="end" class="ct" font-size="11">${fmtRatio(r)}</text>`;
   }
-  s += `<text x="${ML}" y="${MT-10}" class="ct" font-size="11">коэффициент сжатия (raw / сжатый), лог. шкала</text>`;
+  const axisY = MT + ih / 2;
+  s += `<text x="16" y="${axisY}" transform="rotate(-90 16 ${axisY})" text-anchor="middle" class="ct" font-size="11">коэффициент сжатия (raw / сжатый), лог. шкала</text>`;
   s += `<text x="${W-MR}" y="${H-6}" text-anchor="end" class="ct" font-size="11">время на чанк</text>`;
 
   // ---- линия фронта лучших (не опускается вниз) ----
@@ -826,7 +831,7 @@ function renderTimeBars(d){
   });
   s += '</svg>';
   s += `<div class="legend"><span><span class="sw" style="background:var(--gold)"></span>encode</span>
-        <span><span class="sw" style="background:var(--violet)"></span>decode</span></div>`;
+        <span><span class="sw" style="background:var(--dec, var(--violet))"></span>decode</span></div>`;
   panel.innerHTML = s;
 }
 
@@ -864,6 +869,51 @@ function renderRatioBars(d){
   okRes.forEach((r, i) => {
     if (i % step !== 0 && i !== n - 1) return;
     s += `<text x="${x(i)}" y="${H-MB+16}" text-anchor="middle" class="ct" font-size="9.5">${esc(r.id)}</text>`;
+  });
+  s += '</svg>';
+  panel.innerHTML = s;
+}
+
+// ---------- выигрыш от удаления невидимых блоков (% размера) ----------
+function renderPruneGain(){
+  const host = document.getElementById('charts2');
+  let panel = host.querySelector('.panel.prunechart');
+  if (!panel){
+    panel = document.createElement('div'); panel.className = 'panel prunechart';
+    host.appendChild(panel);
+  }
+  const orig = REPORT.datasets[0], prun = REPORT.datasets[1];
+  if (!prun) return;
+  const rows = vis(orig).map(r => {
+    const p = vis(prun).find(x => x.id === r.id);
+    return p && r.ok && p.ok ? { r, p } : null;
+  }).filter(Boolean);
+  const W = 720, H = 420, ML = 58, MR = 12, MT = 26, MB = 78;
+  const iw = W - ML - MR, ih = H - MT - MB;
+  const n = rows.length;
+  if (!n) { panel.innerHTML = ''; return; }
+  const gain = row => (row.r.bytes_avg - row.p.bytes_avg) / Math.max(1e-9, row.r.bytes_avg) * 100;
+  const maxV = Math.max(...rows.map(gain), 0.01) * 1.15;
+  const x = i => ML + iw * (i + 0.5) / n;
+  const yB = v => MT + ih * (1 - v / maxV);
+  const bw = Math.max(4, iw / n * 0.45);
+  let s = `<span class="kicker">Оклюзия</span>`;
+  s += `<h2>Удаление невидимых блоков: выигрыш по размеру, %</h2>`;
+  s += `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  for (let g = 0; g <= 4; g++){
+    const yv = MT + ih * g / 4;
+    s += `<line x1="${ML}" y1="${yv}" x2="${W-MR}" y2="${yv}" class="cg"/>`;
+    s += `<text x="${ML-6}" y="${yv+4}" text-anchor="end" class="ct" font-size="10">${(maxV*(1-g/4)).toFixed(0)}%</text>`;
+  }
+  rows.forEach((row, i) => {
+    const v = gain(row);
+    s += `<rect x="${x(i)-bw/2}" y="${yB(v)}" width="${bw}" height="${MT+ih-yB(v)}" rx="2" fill="${groupColor(row.r.group)}" opacity="0.85"><title>${esc(row.r.name)}: ${v.toFixed(1)}%</title></rect>`;
+    s += `<text x="${x(i)}" y="${yB(v)-5}" text-anchor="middle" class="ct" font-size="9.5">${v.toFixed(0)}%</text>`;
+  });
+  const step = Math.max(1, Math.ceil(n / 12));
+  rows.forEach((row, i) => {
+    if (i % step !== 0 && i !== n - 1) return;
+    s += `<text x="${x(i)}" y="${H-MB+16}" text-anchor="middle" class="ct" font-size="9.5">${esc(row.r.id)}</text>`;
   });
   s += '</svg>';
   panel.innerHTML = s;
