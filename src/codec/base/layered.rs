@@ -68,42 +68,6 @@ pub const REGISTRY: &[RegistryEntry] = &[
         description: "Слойный формат (слой = 1 блок, 16×16): заголовок байт на слой, 4 типа — solid / adaptive map / replicator / repeat. Выбирается минимальный по битам.",
         make: || Box::new(LayeredCodec::new(LayeredConfig::default())) as Box<dyn Codec>,
     },
-    RegistryEntry {
-        id: "layered-h4",
-        name: "Layered 16x16 h4 (solid/adaptive/replicator/repeat)",
-        group: "layered",
-        description: "Слойный формат с толщиной слоя 4 блока: меньше заголовков, хуже гранулярность «solid/replicator».",
-        make: || {
-            Box::new(LayeredCodec::new(LayeredConfig {
-                slice_height: 4,
-                ..Default::default()
-            })) as Box<dyn Codec>
-        },
-    },
-    RegistryEntry {
-        id: "layered-h16",
-        name: "Layered 16x16 h16 (solid/adaptive/replicator/repeat)",
-        group: "layered",
-        description: "Слойный формат с толщиной слоя 16 блоков (секция): максимально дешёвые заголовки, грубее анализ.",
-        make: || {
-            Box::new(LayeredCodec::new(LayeredConfig {
-                slice_height: 16,
-                ..Default::default()
-            })) as Box<dyn Codec>
-        },
-    },
-    RegistryEntry {
-        id: "layered-32",
-        name: "Layered 32x32 h16 (tile of 2x2 chunks)",
-        group: "layered",
-        description: "Слойный формат на тайлах 2×2 чанка (32×32): учитывает корреляцию между соседними чанками.",
-        make: || {
-            Box::new(LayeredCodec::new(LayeredConfig {
-                footprint: 32,
-                slice_height: 16,
-            })) as Box<dyn Codec>
-        },
-    },
 ];
 
 // ---------------- bit helpers (LSB-first) ----------------

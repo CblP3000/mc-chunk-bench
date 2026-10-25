@@ -13,9 +13,9 @@ fn main() -> Result<()> {
         biomes: &data.biomes,
         biome_block_lists: &data.biome_block_lists,
     };
-    let mc = chunk_saver::codec::minecraft::MinecraftCodec;
-    let layered = chunk_saver::codec::layered::LayeredCodec::new(
-        chunk_saver::codec::layered::LayeredConfig::default(),
+    let mc = chunk_saver::codec::base::minecraft::MinecraftCodec;
+    let layered = chunk_saver::codec::base::layered::LayeredCodec::new(
+        chunk_saver::codec::base::layered::LayeredConfig::default(),
     );
 
     for (i, lc) in data.chunks.iter().enumerate() {

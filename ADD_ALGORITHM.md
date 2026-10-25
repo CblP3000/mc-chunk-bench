@@ -13,7 +13,7 @@
 
 ```rust
 pub trait Codec: Send + Sync {
-    fn id(&self) -> &'static str;          // короткий уникальный id, напр. "my-algo"
+    fn id(&self) -> String;                 // короткий уникальный id, напр. "my-algo"
     fn name(&self) -> String;               // человекочитаемое имя
     fn description(&self) -> String;        // описание (1-2 предложения)
     fn group_size(&self) -> usize { 1 }     // сколько чанков кодируется одним вызовом
@@ -43,16 +43,17 @@ pub trait Codec: Send + Sync {
 - **В decode используйте только `get()`**, никогда `intern()`: реестр
   мутировать нельзя.
 - **`group_size`**: `1` (по умолчанию) — один чанк за вызов. Можно вернуть
-  `4`, тогда тайл — квадрат 2×2 чанка (см. `layered-32`), и получите
-  `chunks` длиной 4.
+  `4`, тогда тайл — квадрат 2×2 чанка, и получите `chunks` длиной 4.
 
 ---
 
 ## 2. Какие файлы создавать/менять
 
-### 2.1. Новый файл кодека: `src/codec/my_algo.rs`
+### 2.1. Новый файл кодека: `src/codec/sandbox/my_algo.rs`
 
-Файл можно положить и во вложенную папку (например `src/codec/many_attempt/my_algo.rs`) — `build.rs` сканирует каталог рекурсивно.
+Новые реализации кладите в **`src/codec/sandbox/`** (песочницу) — `build.rs`
+сканирует каталог рекурсивно, и файл автоматически появится в бенчмарке.
+Рабочий шаблон — `src/codec/sandbox/template.rs` (скопируйте его).
 
 Минимальный каркас (можете скопировать целиком):
 
@@ -60,14 +61,14 @@ pub trait Codec: Send + Sync {
 //! Мой алгоритм: <краткое описание в одну строку>
 
 use crate::chunk::Chunk;
-use crate::codec::{Category, Codec, Ctx};
+use crate::codec::{Codec, Ctx};
 use anyhow::Result;
 
 pub struct MyAlgo;
 
 impl Codec for MyAlgo {
-    fn id(&self) -> &'static str {
-        "my-algo"
+    fn id(&self) -> String {
+        "my-algo".to_string()
     }
 
     fn name(&self) -> String {
@@ -103,14 +104,14 @@ impl Codec for MyAlgo {
 
 - Секция — 4096 блоков; индексация как в `Chunk::block_at`:
   `blocks[(y % 16) * 256 + z * 16 + x]`.
-- Если в потоке нужны битовые поля — в `src/codec/layered.rs` уже есть готовые
+- Если в потоке нужны битовые поля — в `src/codec/base/layered.rs` уже есть готовые
   `BitWriter`/`BitReader` (LSB-first) и varint-функции. Можно позаимствовать
   или написать свои.
 - Пустые секции (всё air, id 0) — нормальный случай, обрабатывайте его.
 - Не храните `Vec<u8>`-длину — только если это реально часть формата
   (varint-поля внутри потока допустимы).
 
-### 2.2. Регистрация: `src/codec/<name>.rs` (никаких правок `mod.rs`!)
+### 2.2. Регистрация: в конце файла (никаких правок `mod.rs`!)
 
 Регистрация полностью находится внутри файла алгоритма. В конце файла
 (или рядом с `impl Codec`) объявите константу `REGISTRY`:
@@ -121,21 +122,28 @@ use crate::codec::RegistryEntry;
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
     id: "my-algo",
     name: "My Algo (palette + RLE)",
+    group: "palette-rle", // rle | layered | minecraft | palette | palette-rle | adaptive | context-modeling | predictive | deflate | raw
     description: "Здесь: 1-2 предложения о том, как работает алгоритм и для каких данных он хорош.",
     make: || Box::new(MyAlgo) as Box<dyn Codec>,
 }];
 ```
 
 - `id` — уникальный короткий идентификатор (появится в отчёте и на графиках).
+- `group` — категория для раскраски графиков (см. список в комментарии).
 - `description` — описание, оно живёт в коде рядом с инициализацией
   и автоматически попадает в JSON-отчёт и на страницу.
 - `make` — фабрика: возвращает `Box<dyn Codec>`.
 - Если у алгоритма есть параметры, добавьте **несколько записей** в массив
-  `REGISTRY` (как `layered`, `layered-h4`, `layered-h16`, `layered-32`).
+  `REGISTRY` — по одной на набор параметров.
 
 **Ничего больше менять не нужно!** `build.rs` при сборке сканирует каталог
-`src/codec/`, находит ваш файл, автоматически объявляет модуль и собирает
-реестр. Регистрация в `src/codec/mod.rs` не требуется вообще.
+`src/codec/` рекурсивно, находит ваш файл, автоматически объявляет модуль
+и собирает реестр. Регистрация в `src/codec/mod.rs` не требуется вообще.
+
+Когда алгоритм прошёл проверки:
+- **удался** → `git mv src/codec/sandbox/my_algo.rs src/codec/custom/my_algo.rs`;
+- **не удался** → удалите файл (или оставьте с закомментированным
+  `REGISTRY`, если код хочется сохранить).
 
 ---
 
@@ -146,11 +154,11 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 1. **Unit-тесты** (`cargo test`) — битовые распаковщики и пр.
    Свои тесты пишите в `#[cfg(test)]` внутри файла кодека.
 
-2. **Синтетический round-trip тест** (`cargo run --release --bin laytest`):
-   гоняет все зарегистрированные варианты `layered` по паттернам
-   (равномерный, шумный, колонки, длинные серии и т.д.).
-   **Для своего алгоритма добавьте аналогичную проверку** — например,
-   вынесите общий хелпер `synthetic`-чанка и прогоните через `MyAlgo`.
+ 2. **Синтетический round-trip тест** (`cargo run --release --bin laytest`):
+    гоняет `layered` по паттернам (равномерный, шумный, колонки,
+    длинные серии и т.д.).
+    **Для своего алгоритма добавьте аналогичную проверку** — например,
+    вынесите общий хелпер `synthetic`-чанка и прогоните через `MyAlgo`.
 
 3. **Реальный тест на чанках из миров** (`cargo run --release --bin dbg`):
    читает настоящие сейвы (путь по умолчанию — `/mnt/D/lol/.minecraft/home/Fabric 1.21.11/saves`)
@@ -175,7 +183,7 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 
 ## 4. Чек-лист для агента-разработчика
 
-- [ ] Создан `src/codec/<name>.rs` с `impl Codec`.
+- [ ] Создан `src/codec/sandbox/<name>.rs` с `impl Codec`.
 - [ ] В этом же файле объявлен `pub const REGISTRY: &[RegistryEntry]`
       (id, имя, категория, описание, фабрика).
 - [ ] `src/codec/mod.rs` **не изменялся** (это проверено тестом ниже).
@@ -196,28 +204,26 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 | Всё декодируется в 0 | В `minecraft`-подобных форматах упаковывайте **индексы палитры**, а не глобальные id (см. `encode_section`). |
 | Биомы не совпадают | `biomes` — часть round-trip. Либо храните их в потоке, либо копируйте из исходника (не подменяйте нулями). |
 | Медленный encode | Избегайте аллокаций на каждый блок; пишите в `Vec<u8>` с `with_capacity`; не используйте `format!` в горячем цикле. |
-| Алгоритм медленный, но сжимает отлично | Ставьте `Category::Good` — попадёт в «медленные/плотные». |
-| Хочется кодировать несколько чанков сразу | `group_size() -> 4` и работайте с `chunks` длиной 4 (аналог `layered-32`). |
+| Алгоритм медленный, но сжимает отлично | Это не ошибка: выберите для него `group` (напр. `context-modeling`) — он попадёт в соответствующую группу. |
+| Хочется кодировать несколько чанков сразу | `group_size() -> 4` и работайте с `chunks` длиной 4. |
 
 ---
 
 ## 6. Пример готового простого алгоритма
 
 Самый простой рабочий пример — «палитра на чанк + прямой индекс»:
-
 ```rust
 //! Palette-per-chunk: одна палитра на весь чанк, индексы по 1 байту.
 use crate::chunk::{Chunk, Section, SECTION_BLOCKS};
-use crate::codec::{Category, Codec, Ctx};
+use crate::codec::{Codec, Ctx};
 use anyhow::{bail, Result};
 use std::collections::HashMap;
 
 pub struct PaletteChunkCodec;
 
 impl Codec for PaletteChunkCodec {
-    fn id(&self) -> &'static str { "palette-chunk" }
+    fn id(&self) -> String { "palette-chunk".to_string() }
     fn name(&self) -> String { "Palette per chunk".to_string() }
-
     fn description(&self) -> String {
         "Одна палитра на весь чанк + 1 байт на блок. Проще Minecraft-стандарта, \
          хуже на больших палитрах."
@@ -303,10 +309,12 @@ impl Codec for PaletteChunkCodec {
 
 ## 7. Подсказка: где смотреть эталонные реализации
 
-- `src/codec/minecraft.rs` — стандарт MC: палитра + бит-упакованные longs,
+- `src/codec/base/minecraft.rs` — стандарт MC: палитра + бит-упакованные longs,
   varint'ы, строки с префиксом длины.
-- `src/codec/layered.rs` — слойный формат: `BitWriter`/`BitReader`,
+- `src/codec/base/layered.rs` — слойный формат: `BitWriter`/`BitReader`,
   составные заголовки, выбор наилучшего представления.
-- `src/codec/rle.rs` — простой RLE по колонкам.
-- `src/codec/raw.rs` — самый примитивный формат (эталон скорости).
+- `src/codec/base/rle.rs` — простой RLE по колонкам.
+- `src/codec/base/raw.rs` — самый примитивный формат (эталон скорости).
 - `src/codec/deflate.rs` — обёртка, добавляющая zlib к любому кодеку.
+- `src/codec/custom/` — примеры более продвинутых кодеков (палитры,
+  контекстное моделирование и т.д.).

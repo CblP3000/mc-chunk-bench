@@ -1,8 +1,19 @@
 //! Codec trait and registry of chunk storage algorithms.
 //!
-//! New algorithms are **self-registering**: create `src/codec/<name>.rs`
-//! exporting a `pub const REGISTRY: &[RegistryEntry]` and it is picked up
-//! automatically by `build.rs` (no edits in this file are needed).
+//! Directory layout (all subdirectories are scanned recursively by `build.rs`):
+//!
+//! - `base/` — reference/baseline algorithms (`raw`, `minecraft`, `rle`,
+//!   `rle-linear`, `layered`); always kept in the benchmark.
+//! - `custom/` — accepted custom codecs that earn their place in the benchmark.
+//! - `disabled/` — codecs that are turned off (their `REGISTRY` is commented
+//!   out) but kept for reference.
+//! - `sandbox/` — **new** implementations for testing. Drop a file here,
+//!   it is auto-registered (if it exports `REGISTRY`) and appears in the
+//!   benchmark immediately. Promote it to `custom/` (or delete it) when done.
+//!
+//! New algorithms are **self-registering**: create a `.rs` file anywhere under
+//! `src/codec/` exporting a `pub const REGISTRY: &[RegistryEntry]` and it is
+//! picked up automatically by `build.rs` (no edits in this file are needed).
 
 use crate::chunk::Chunk;
 use crate::world::{BiomeRegistry, BlockRegistry};

@@ -396,7 +396,7 @@ async function init(){
     `всего блоков: <b>${fmt(REPORT.total_blocks)}</b>`,
     `глобальный список блоков: <b>${fmt(REPORT.global_blocks)}</b>`,
     `биомов: <b>${fmt(REPORT.biomes)}</b>`,
-    `seed: ${esc(String(REPORT.seed))}`,
+    `<span title="Сид генератора случайных чисел для выборки чанков (не сид мира)">сид выборки: <b>${esc(String(REPORT.seed))}</b></span>`,
   ];
   document.getElementById('meta').innerHTML =
     metaParts.map(p => `<span style="white-space:nowrap">${p}</span>`).join(' · ');
@@ -940,7 +940,7 @@ function renderTable(d){
   html += '</tbody></table>';
   panel.innerHTML += html;
   const note = document.createElement('div'); note.className = 'note';
-  note.textContent = 'время и размер — средние на один чанк; min/max тоже на чанк. Вариант layered-32 кодирует тайлы из 4 чанков (2×2) и выше, поэтому его выигрыш особенно заметен на однородных участках.';
+  note.textContent = 'время и размер — средние на один чанк; min/max тоже на чанк.';
   panel.appendChild(note);
   host.appendChild(panel);
 }

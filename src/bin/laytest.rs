@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chunk_saver::bench::chunks_equal;
 use chunk_saver::chunk::{Chunk, Section, SECTION_BLOCKS};
-use chunk_saver::codec::layered::{LayeredCodec, LayeredConfig};
+use chunk_saver::codec::base::layered::{LayeredCodec, LayeredConfig};
 use chunk_saver::codec::{Codec, Ctx};
 use chunk_saver::world::{BiomeRegistry, BlockRegistry};
 
