@@ -117,20 +117,14 @@ fn is_world_dir(dir: &Path) -> bool {
     dir.join("region").is_dir() || dir.join("level.dat").is_file()
 }
 
-/// Миры, исключаемые из выборки по умолчанию (на диске они остаются
-/// нетронутыми). Плоские миры дают почти пустые чанки, 2b2t — легаси-чанки
-/// с большим числом однотипных блоков; оба искажают картину сжатия.
-const BUILTIN_EXCLUDES: [&str; 3] = ["плоский", "flat", "2b2t"];
-
 fn is_excluded_world(dir: &Path, extra_excludes: &[String]) -> bool {
     let name = dir
         .file_name()
         .map(|n| n.to_string_lossy().to_lowercase())
         .unwrap_or_default();
-    BUILTIN_EXCLUDES.iter().any(|p| name.contains(p))
-        || extra_excludes
-            .iter()
-            .any(|p| name.contains(&p.to_lowercase()))
+    extra_excludes
+        .iter()
+        .any(|p| name.contains(&p.to_lowercase()))
 }
 
 /// List world directories under a saves root.
