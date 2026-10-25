@@ -6,29 +6,122 @@
 <title>Хранение чанков Minecraft — бенчмарк</title>
 <style>
   :root {
-    --bg:#131110;            /* тёплый графит, без синевы */
-    --bg-soft:#171412;
-    --panel:#1b1815;
-    --panel2:#211d19;
-    --line:#2d2823;
-    --line2:#453c31;
-    --ink:#f4ede3;
-    --mut:#a99e8f;
-    --mut2:#877c6d;
-    --gold:#f0b95c;
-    --coral:#f0735a;
-    --mint:#5fd3a7;
-    --violet:#b594ef;
-    --red:#e5635c;
-    --ok:#7ed6a5;
+    --bg:#121212;
+    --bg-soft:#17181c;
+    --panel:#1e2026;
+    --panel2:#282b33;
+    --line:#30333b;
+    --line2:#484d58;
+    --ink:#ececec;
+    --mut:#a2a8b4;
+    --mut2:#767c88;
+    --gold:#7aa2f7;
+    --coral:#9aa5b1;
+    --mint:#9aa5b1;
+    --violet:#7aa2f7;
+    --red:#f28f8f;
+    --ok:#a8c8a8;
+    --grid:#2b2e36;
+    --axis:#818792;
+    --origbar:#7aa2f7;
+    --prunbar:#f2a65a;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="plum"] {
+    --bg:#0e0b13; --bg-soft:#141019; --panel:#191423; --panel2:#221b30;
+    --line:#2d2540; --line2:#453a60; --ink:#efe9f6; --mut:#a799ba; --mut2:#716383;
+    --gold:#ffb36b; --coral:#f57e9c; --mint:#74d7ab; --violet:#b18cf2;
+    --red:#ef6a6a; --ok:#8ed5ab;
+    --grid:#241d33; --axis:#8f80a3; --origbar:#ffc97e; --prunbar:#f57e9c;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  /* ---------- темы (переключаются в настройках) ---------- */
+  [data-theme="graphite"] {
+    --bg:#131110; --bg-soft:#171412; --panel:#1b1815; --panel2:#211d19;
+    --line:#2d2823; --line2:#453c31; --ink:#f4ede3; --mut:#a99e8f; --mut2:#877c6d;
+    --gold:#f0b95c; --coral:#f0735a; --mint:#5fd3a7; --violet:#b594ef;
+    --red:#e5635c; --ok:#7ed6a5;
+    --grid:#2b2620; --axis:#978b7d; --origbar:#d8a452; --prunbar:#e0635c;
     --grad:linear-gradient(135deg, var(--violet), var(--mint));
+  }
+  [data-theme="aurora"] {
+    --bg:#0a0d15; --bg-soft:#0e1220; --panel:#121726; --panel2:#1a2134;
+    --line:#252e45; --line2:#3b4766; --ink:#e8edf8; --mut:#9aa7c0; --mut2:#66738f;
+    --gold:#5ad1e6; --coral:#ff7a90; --mint:#3ddc97; --violet:#a78bfa;
+    --red:#f0616d; --ok:#6ee7b7;
+    --grid:#232b40; --axis:#8490ab; --origbar:#f5c86e; --prunbar:#ff7a90;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="acid"] {
+    --bg:#0b0e08; --bg-soft:#10140b; --panel:#141910; --panel2:#1d2417;
+    --line:#262e1d; --line2:#3d4a2f; --ink:#eef6e4; --mut:#93a582; --mut2:#66755a;
+    --gold:#c9ff4d; --coral:#ff8a5c; --mint:#4ade80; --violet:#ff5ca8;
+    --red:#ff6b6b; --ok:#7ee787;
+    --grid:#20271a; --axis:#87956f; --origbar:#ffd166; --prunbar:#ff8a5c;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="ocean"] {
+    --bg:#081018; --bg-soft:#0c1620; --panel:#10202c; --panel2:#172a3a;
+    --line:#22384a; --line2:#335069; --ink:#e2eef8; --mut:#8fa8bd; --mut2:#5d748c;
+    --gold:#39c6ff; --coral:#ff6f91; --mint:#2fe3c5; --violet:#7aa7ff;
+    --red:#ff5d73; --ok:#34d9a7;
+    --grid:#1c3042; --axis:#7590a8; --origbar:#ffcf7a; --prunbar:#ff6f91;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="sunset"] {
+    --bg:#14100e; --bg-soft:#191411; --panel:#201814; --panel2:#2b2019;
+    --line:#37281f; --line2:#523c2e; --ink:#f7ece6; --mut:#bfa494; --mut2:#8a6f5f;
+    --gold:#ffa34d; --coral:#ff6b6b; --mint:#66d9a8; --violet:#c98ae0;
+    --red:#f05c5c; --ok:#7fd4a8;
+    --grid:#2f2118; --axis:#a58b7a; --origbar:#ffc07a; --prunbar:#ff6b6b;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="forest"] {
+    --bg:#0c100c; --bg-soft:#111610; --panel:#161c14; --panel2:#1f271b;
+    --line:#2a3526; --line2:#41513a; --ink:#e9f0e4; --mut:#96a88b; --mut2:#64755c;
+    --gold:#e6b35a; --coral:#e67e6f; --mint:#7bc96f; --violet:#a98fe0;
+    --red:#e05e5e; --ok:#8fce7f;
+    --grid:#222d1f; --axis:#82937a; --origbar:#e8c07c; --prunbar:#e67e6f;
+    --grad:linear-gradient(135deg, var(--gold), var(--mint));
+  }
+  [data-theme="wine"] {
+    --bg:#120c10; --bg-soft:#171016; --panel:#1d141c; --panel2:#281b25;
+    --line:#382634; --line2:#513a4c; --ink:#f6eaf0; --mut:#c09aa9; --mut2:#8c6979;
+    --gold:#f2c27e; --coral:#f28a9e; --mint:#8ecab2; --violet:#d29ae0;
+    --red:#e85d75; --ok:#a2cdb0;
+    --grid:#2e1f28; --axis:#a98a98; --origbar:#f0c087; --prunbar:#f28a9e;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="ice"] {
+    --bg:#0c1016; --bg-soft:#11161e; --panel:#171e28; --panel2:#202a38;
+    --line:#2c394b; --line2:#42546d; --ink:#eaf0f7; --mut:#9fb0c5; --mut2:#6a7d94;
+    --gold:#6cc8ff; --coral:#ff8fa8; --mint:#59d6c4; --violet:#93a7ff;
+    --red:#f06484; --ok:#66d8c8;
+    --grid:#253244; --axis:#8ba0b8; --origbar:#f0ca7e; --prunbar:#ff8fa8;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="mono"] {
+    --bg:#0d0d0f; --bg-soft:#121214; --panel:#17171a; --panel2:#202024;
+    --line:#2b2b30; --line2:#404047; --ink:#f0f0f2; --mut:#a0a0a8; --mut2:#777780;
+    --gold:#e8e8ec; --coral:#c9c9d0; --mint:#b8b8c0; --violet:#cfcfd6;
+    --red:#f07070; --ok:#a8e0c0;
+    --grid:#26262b; --axis:#8e8e96; --origbar:#d8d8de; --prunbar:#a0a0aa;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
+  }
+  [data-theme="gray"] {
+    --bg:#121212; --bg-soft:#17181c; --panel:#1e2026; --panel2:#282b33;
+    --line:#30333b; --line2:#484d58; --ink:#ececec; --mut:#a2a8b4; --mut2:#767c88;
+    --gold:#7aa2f7; --coral:#9aa5b1; --mint:#9aa5b1; --violet:#7aa2f7;
+    --red:#f28f8f; --ok:#a8c8a8;
+    --grid:#2b2e36; --axis:#818792; --origbar:#7aa2f7; --prunbar:#f2a65a;
+    --grad:linear-gradient(135deg, var(--gold), var(--violet));
   }
   * { box-sizing:border-box; }
   html { scrollbar-color: var(--line2) var(--bg); }
   body { margin:0; background:var(--bg); color:var(--ink);
     font:14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
-    background-image:radial-gradient(1100px 480px at 50% -220px, rgba(240,185,92,.07), transparent 70%); }
-  ::selection { background:rgba(240,185,92,.25); }
+    background-image:radial-gradient(1100px 480px at 50% -220px, color-mix(in srgb, var(--gold) 6%, transparent), transparent 70%); }
+  ::selection { background:color-mix(in srgb, var(--gold) 25%, transparent); }
   a { color:var(--gold); }
 
   /* центр. колонка: контент не растягивается на весь экран */
@@ -52,13 +145,32 @@
   .hero .v small { font-size:12px; color:var(--mut); font-weight:400; }
   .hero .cell.accent .v { background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
 
-  /* ---------- segmented tabs ---------- */
-  .tabs { display:flex; gap:4px; margin-top:16px; background:var(--panel); border:1px solid var(--line);
-    border-radius:10px; padding:4px; width:max-content; max-width:100%; }
-  .tab { padding:6px 14px; border-radius:7px; cursor:pointer; color:var(--mut); font-weight:500;
-    font-size:13px; transition:background .15s, color .15s; border:1px solid transparent; }
-  .tab:hover { color:var(--ink); }
-  .tab.active { background:var(--grad); color:#131110; font-weight:700; box-shadow:0 2px 10px rgba(160,140,235,.35); }
+  /* ---------- выдвижная панель настроек (скрыта по умолчанию) ---------- */
+  .setpanel { margin-top:14px; border:1px solid var(--line); border-radius:10px;
+    background:var(--panel); overflow:hidden; }
+  .sethead { display:flex; align-items:center; justify-content:space-between;
+    padding:8px 12px; cursor:pointer; user-select:none; font-size:13px;
+    font-weight:600; color:var(--mut); transition:color .15s; }
+  .sethead:hover { color:var(--ink); }
+  .chev { display:inline-block; transition:transform .2s; font-size:11px; color:var(--mut2); }
+  .setpanel.open .chev { transform:rotate(90deg); }
+  .setbody { border-top:1px solid var(--line); padding:10px 12px 12px;
+    background:var(--bg-soft); }
+  .setbody .controls { margin-top:0; }
+  .setbody .dstoggle { margin-top:0; }
+
+  /* ---------- переключатель датасетов (слайдер-тумблер) ---------- */
+  .dstoggle { position:relative; display:flex; background:var(--panel);
+    border:1px solid var(--line); border-radius:999px; padding:2px;
+    width:max-content; max-width:100%; overflow:hidden; }
+  .dtog-thumb { position:absolute; top:2px; bottom:2px; left:2px; width:0;
+    background:var(--panel2); border:1px solid var(--line2); border-radius:999px;
+    transition:transform .2s ease, width .2s ease; }
+  .dtog-opt { position:relative; z-index:1; flex:0 0 auto; padding:4px 14px;
+    text-align:center; cursor:pointer; user-select:none; white-space:nowrap;
+    font-size:12.5px; font-weight:500; color:var(--mut); transition:color .15s; }
+  .dtog-opt:hover { color:var(--ink); }
+  .dtog-opt.active { color:var(--gold); font-weight:600; }
 
   /* ---------- controls ---------- */
   .controls { display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
@@ -74,7 +186,7 @@
   .card:hover { border-color:var(--line2); transform:translateY(-1px); }
   .card.lead { border:1px solid transparent; background:
       linear-gradient(var(--panel2), var(--panel2)) padding-box, var(--grad) border-box;
-    box-shadow:0 4px 20px rgba(150,130,230,.16); }
+    box-shadow:0 4px 20px color-mix(in srgb, var(--violet) 18%, transparent); }
   .card .k { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--mut2); }
   .card .v { font-size:15.5px; font-weight:650; margin-top:3px; line-height:1.3; font-variant-numeric:tabular-nums; }
   .card .v small { display:block; color:var(--mut); font-weight:400; font-size:11.5px; margin-top:2px; }
@@ -96,14 +208,14 @@
   td { text-align:right; padding:9px 10px; border-bottom:1px solid var(--line);
     font-variant-numeric:tabular-nums; vertical-align:top; }
   tbody tr { transition:background .12s; }
-  tbody tr:hover { background:rgba(240,185,92,.045); }
+  tbody tr:hover { background:color-mix(in srgb, var(--gold) 5%, transparent); }
   tr:last-child td { border-bottom:none; }
   .adesc { color:var(--mut2); font-size:11.5px; font-weight:400; display:block;
     max-width:52ch; line-height:1.35; margin-top:2px; }
   .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:600; }
-  .fast { background:rgba(95,211,167,.13); color:var(--mint); }
-  .balanced { background:rgba(240,185,92,.13); color:var(--gold); }
-  .good-compression { background:rgba(181,148,239,.14); color:var(--violet); }
+  .fast { background:color-mix(in srgb, var(--mint) 13%, transparent); color:var(--mint); }
+  .balanced { background:color-mix(in srgb, var(--gold) 13%, transparent); color:var(--gold); }
+  .good-compression { background:color-mix(in srgb, var(--violet) 14%, transparent); color:var(--violet); }
   .ok { color:var(--ok); } .err { color:var(--red); }
 
   /* ---------- legend / misc ---------- */
@@ -122,20 +234,20 @@
     font-size:12px; color:var(--mut); cursor:pointer; user-select:none; }
   .algchip input { width:14px; height:14px; accent-color:var(--gold); cursor:pointer; }
   .algchip.off { opacity:.45; text-decoration:line-through; }
-  .rubber { fill:rgba(160,140,235,.18); stroke:var(--violet); stroke-width:1; pointer-events:none; }
+  .rubber { fill:color-mix(in srgb, var(--violet) 18%, transparent); stroke:var(--violet); stroke-width:1; pointer-events:none; }
   .zoomreset { color:var(--gold); cursor:pointer; text-decoration:underline dotted; font-size:12px; margin-left:8px; }
 
   /* chart element paint classes */
-  .cg { stroke:#2b2620; } .ct { fill:#978b7d; }
-  .clbl { fill:#f4ede3; pointer-events:none; }
+  .cg { stroke:var(--grid); } .ct { fill:var(--axis); }
+  .clbl { fill:var(--ink); pointer-events:none; }
   .panel svg line { pointer-events:none; }
   .panel svg text { pointer-events:none; }
   .penc { fill:var(--gold); } .pdec { fill:var(--violet); }
-  .porig { fill:#d8a452; } .pprun { fill:#e0635c; }
+  .porig { fill:var(--origbar); } .pprun { fill:var(--prunbar); }
 
   @media (max-width:1180px){ .grid2{grid-template-columns:1fr;} .hero{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:640px){ .lw{padding-left:14px;padding-right:14px;} h1{font-size:19px;}
-    .hero{grid-template-columns:1fr 1fr;} .tabs{width:100%;} .tab{flex:1;text-align:center;} }
+    .hero{grid-template-columns:1fr 1fr;} .dstoggle{width:100%;} }
 </style>
 </head>
 <body>
@@ -146,19 +258,29 @@
 </header>
 
 <div class="hero lw" id="hero"></div>
-<div class="tabs lw" id="tabs"></div>
 <div class="cards lw" id="cards"></div>
-<div class="controls lw" id="controls" style="display:none">
-  <label for="metric">Ось X (время):</label>
-  <select id="metric">
-    <option value="total">encode + decode</option>
-    <option value="encode">только encode</option>
-    <option value="decode">только decode</option>
-  </select>
-  <label class="chk"><input type="checkbox" id="gzip"> Сжатие (все методы + deflate)</label>
-  <div class="alglist" id="alglist"></div>
-  <span class="legend" id="mainlegend"></span>
+<div class="setpanel lw" id="setpanel">
+  <div class="sethead" id="sethead">
+    <span>Настройки</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="setbody" id="setbody" style="display:none">
+    <div class="controls" id="controls">
+      <label for="metric">Ось X (время):</label>
+      <select id="metric">
+        <option value="total">encode + decode</option>
+        <option value="encode">только encode</option>
+        <option value="decode">только decode</option>
+      </select>
+      <label for="theme">Тема:</label>
+      <select id="theme"></select>
+      <label class="chk"><input type="checkbox" id="gzip"> Сжатие (все методы + deflate)</label>
+      <div class="dstoggle" id="tabs"><div class="dtog-thumb"></div></div>
+      <div class="alglist" id="alglist"></div>
+    </div>
+  </div>
 </div>
+<div class="legend lw" id="mainlegend"></div>
 <div class="wrap lw" id="charts"></div>
 <div class="grid2 lw" id="charts2"></div>
 <div class="wrap lw" id="tables"></div>
@@ -169,6 +291,24 @@ const fmtKB = b => b >= 1024 ? (b/1024).toFixed(2) + ' KB' : fmt(Math.round(b)) 
 const fmtUs = u => u >= 1000 ? (u/1000).toFixed(2) + ' ms' : u.toFixed(1) + ' µs';
 const fmtRatio = r => r >= 100 ? r.toFixed(0) + '×' : r.toFixed(1) + '×';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const THEMES = [
+  ['plum', 'Слива'],
+  ['graphite', 'Графит'],
+  ['aurora', 'Аврора'],
+  ['acid', 'Кислота'],
+  ['ocean', 'Океан'],
+  ['sunset', 'Закат'],
+  ['forest', 'Лес'],
+  ['wine', 'Бордо'],
+  ['ice', 'Лёд'],
+  ['mono', 'Монохром'],
+  ['gray', 'Серый'],
+];
+(function () {
+  const saved = localStorage.getItem('ccs_theme');
+  if (saved) document.documentElement.dataset.theme = saved;
+})();
 
 let REPORT = null, ACTIVE = 0, METRIC = 'total', GZIP = false;
 let DISABLED = new Set(); // id базового алгоритма
@@ -259,13 +399,39 @@ async function init(){
   const tabs = document.getElementById('tabs');
   REPORT.datasets.forEach((d, i) => {
     const b = document.createElement('div');
-    b.className = 'tab' + (i === ACTIVE ? ' active' : '');
+    b.className = 'dtog-opt' + (i === ACTIVE ? ' active' : '');
     b.textContent = d.label === 'original' ? 'Оригинальные чанки' : 'После удаления невидимых блоков';
     b.onclick = () => { ACTIVE = i; render(); };
     tabs.appendChild(b);
   });
   document.getElementById('metric').onchange = e => { METRIC = e.target.value; render(); };
   document.getElementById('gzip').onchange = e => { GZIP = e.target.checked; render(); };
+
+  // переключатель темы
+  const themeSel = document.getElementById('theme');
+  THEMES.forEach(([id, label]) => {
+    const o = document.createElement('option');
+    o.value = id; o.textContent = label;
+    themeSel.appendChild(o);
+  });
+  themeSel.value = document.documentElement.dataset.theme || 'gray';
+  themeSel.onchange = e => {
+    document.documentElement.dataset.theme = e.target.value;
+    localStorage.setItem('ccs_theme', e.target.value);
+  };
+
+  // выдвижная панель настроек (скрыта по умолчанию)
+  const setPanel = document.getElementById('setpanel');
+  const setBody = document.getElementById('setbody');
+  document.getElementById('sethead').onclick = () => {
+    const open = setPanel.classList.toggle('open');
+    setBody.style.display = open ? 'block' : 'none';
+    if (open) requestAnimationFrame(placeThumb);
+  };
+  window.addEventListener('resize', () => {
+    const t = document.getElementById('tabs');
+    if (t && t.offsetParent) placeThumb();
+  });
 
   // список алгоритмов с галочками (отключение долгих/неинтересных)
   const algRoot = document.getElementById('alglist');
@@ -296,11 +462,22 @@ function ratioOf(d, r){
   return raw.bytes_avg / Math.max(1e-9, r.bytes_avg);
 }
 
+function placeThumb(){
+  const tabs = document.getElementById('tabs');
+  if (!tabs || tabs.offsetParent === null) return;
+  const opts = tabs.querySelectorAll('.dtog-opt');
+  const thumb = tabs.querySelector('.dtog-thumb');
+  if (!opts.length || !thumb) return;
+  const act = opts[ACTIVE] || opts[0];
+  thumb.style.width = act.offsetWidth + 'px';
+  thumb.style.transform = `translateX(${act.offsetLeft - thumb.offsetLeft}px)`;
+}
+
 function render(){
-  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === ACTIVE));
+  document.querySelectorAll('.dtog-opt').forEach((t, i) => t.classList.toggle('active', i === ACTIVE));
+  placeThumb();
   rebuildGroupColors();
   const d = REPORT.datasets[ACTIVE];
-  document.getElementById('controls').style.display = 'flex';
   const groups = [...new Set(vis(d).map(r => r.group))].sort();
   document.getElementById('mainlegend').innerHTML =
     groups.map(g => `<span><span class="sw circ" style="background:${groupColor(g)}"></span>${esc(g)}</span>`).join('') +
@@ -609,8 +786,8 @@ function renderSizeAcrossDatasets(){
     s += `<text x="${x(i)}" y="${H-MB+16}" text-anchor="middle" class="ct" font-size="9.5">${esc(id)}</text>`;
   });
   s += '</svg>';
-  s += `<div class="legend"><span><span class="sw" style="background:#d8a452"></span>оригинал</span>
-        <span><span class="sw" style="background:#e0635c"></span>после оклюзии</span></div>`;
+  s += `<div class="legend"><span><span class="sw" style="background:var(--origbar)"></span>оригинал</span>
+        <span><span class="sw" style="background:var(--prunbar)"></span>после оклюзии</span></div>`;
   panel.innerHTML = s;
 }
 
