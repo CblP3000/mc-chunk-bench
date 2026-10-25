@@ -62,8 +62,6 @@ impl LayeredCodec {
 
 pub const REGISTRY: &[RegistryEntry] = &[
     RegistryEntry {
-        id: "layered",
-        name: "Layered 16x16 h1 (solid/adaptive/replicator/repeat)",
         group: "layered",
         description: "Слойный формат (слой = 1 блок, 16×16): заголовок байт на слой, 4 типа — solid / adaptive map / replicator / repeat. Выбирается минимальный по битам.",
         make: || Box::new(LayeredCodec::new(LayeredConfig::default())) as Box<dyn Codec>,

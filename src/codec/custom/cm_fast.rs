@@ -19,8 +19,6 @@ use std::collections::HashMap;
 pub struct CmFastCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "cm-fast",
-    name: "CM-Fast",
     group: "context-modeling",
     description: "Быстрое контекстное моделирование: палитра + побитовый \
                   бинарный арифметический кодер с миксером нескольких \

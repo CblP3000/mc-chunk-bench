@@ -26,8 +26,6 @@ pub struct RleLinearCodec {
 
 pub const REGISTRY: &[RegistryEntry] = &[
     RegistryEntry {
-        id: "rle-linear",
-        name: "Linear RLE x,y,z (whole chunk)",
         group: "rle",
         description: "Весь чанк как одна линия в порядке x, y, z (снизу вверх): длинные серии камня под землёй и воздуха над поверхностью сжимаются в пары «длина, блок».",
         make: || Box::new(RleLinearCodec { order: ScanOrder::XyzUp }) as Box<dyn Codec>,
@@ -36,8 +34,6 @@ pub const REGISTRY: &[RegistryEntry] = &[
     // на положение «длинных серий», но не на размер на реальных чанках).
     // Для включения уберите комментарий со строк ниже.
     // RegistryEntry {
-    //     id: "rle-linear-top",
-    //     name: "Linear RLE top-down (air first)",
     //     group: "rle",
     //     description: "Весь чанк как одна линия, но y идёт сверху вниз: линия начинается с воздуха (небо), затем слои земли. Хорош, когда верхняя часть чанка почти пустая.",
     //     make: || Box::new(RleLinearCodec { order: ScanOrder::XyzDown }) as Box<dyn Codec>,

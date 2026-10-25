@@ -6,8 +6,6 @@ use std::io::{Read, Write};
 pub struct BitmaskZlibCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "bitmask-zlib",
-    name: "Bitmask Zlib",
     group: "deflate",
     description: "Air-bitmask + zlib best: 4096-битная маска воздуха + только ненулевые блоки, затем zlib-лучшее сжатие. Отличное цена/качество для воздушных секций.",
     make: || Box::new(BitmaskZlibCodec) as Box<dyn Codec>,

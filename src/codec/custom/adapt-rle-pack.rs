@@ -5,8 +5,6 @@ use anyhow::Result;
 pub struct MyAlgoCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "adapt-rle-pack",
-    name: "Adaptive RLE + Palette",
     group: "adaptive",
     description: "Адаптивный алгоритм: для каждой секции выбирает лучший из RLE, битовой упаковки с палитрой или сырых данных.",
     make: || Box::new(MyAlgoCodec) as Box<dyn Codec>,

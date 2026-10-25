@@ -5,8 +5,6 @@ use anyhow::{bail, Result};
 pub struct FastDecodeCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "fast-decode",
-    name: "Fast Decode",
     group: "palette-rle",
     description: "Palette + bit-packed RLE optimized for very fast decoding with good compression. \
                   Uses per-section palettes with minimal bit-width indices and run-length encoding \

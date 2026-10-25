@@ -5,8 +5,6 @@ use anyhow::{bail, Result};
 pub struct TurboPalCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "turbopal",
-    name: "TurboPal",
     group: "adaptive",
     description: "Ultra-fast decoding codec with adaptive RLE and power-of-two bit-packed palettes.",
     make: || Box::new(TurboPalCodec) as Box<dyn Codec>,

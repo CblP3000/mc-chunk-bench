@@ -618,8 +618,6 @@ impl Codec for QuickPalCodec {
 // ------------------------- регистрация -------------------------
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "quickpal",
-    name: "QuickPal",
     group: "adaptive",
     description: "Адаптивная палитра+битпак (uniform/sparse/RLE/backref на секцию): \
                   декод без энтропийного декодера — очень быстрый, сжатие хорошее.",

@@ -8,8 +8,6 @@ use anyhow::{bail, Result};
 pub struct ColumnRleCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "rle-column",
-    name: "Column RLE (runs along Y)",
     group: "rle",
     description: "RLE по вертикальным колонкам (x, z): длинные серии камня/земли/воздуха сжимаются в пары «длина, блок». Быстро и просто.",
     make: || Box::new(ColumnRleCodec) as Box<dyn Codec>,

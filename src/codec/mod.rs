@@ -58,8 +58,6 @@ pub trait Codec: Send + Sync {
 /// algorithm's own file so that `src/codec/mod.rs` never has to change.
 #[derive(Clone, Copy)]
 pub struct RegistryEntry {
-    pub id: &'static str,
-    pub name: &'static str,
     /// method group used for coloring on charts: "raw" | "rle" | "minecraft" | "layered" | ...
     pub group: &'static str,
     pub description: &'static str,

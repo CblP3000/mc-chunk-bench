@@ -25,8 +25,6 @@ const SEC_BIOMES: usize = 64;
 pub struct FastBinCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "fastbin",
-    name: "FastBin (fast decode)",
     group: "adaptive",
     description: "Байт-выровненный формат с дешёвыми режимами декода: air/uniform/копия секции/палитра+битпак/RLE. Decode — почти чистый memcpy и slice-fill.",
     make: || Box::new(FastBinCodec) as Box<dyn Codec>,

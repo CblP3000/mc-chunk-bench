@@ -530,8 +530,6 @@ impl Codec for Apex3dCodec {
 }
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "apex-3d",
-    name: "Apex 3D",
     group: "predictive",
     description: "Экстремальное сжатие чанков: 3D-пространственный причинный предиктор вокселей, дедупликация секций, единая частотная палитра и DEFLATE Level 9.",
     make: || Box::new(Apex3dCodec) as Box<dyn Codec>,

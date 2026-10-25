@@ -740,8 +740,6 @@ impl Codec for CtxPaletteCodec {
 }
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "ctx-palette",
-    name: "CTX-Palette",
     group: "context-modeling",
     description: "Палитры по секциям + LZMA-подобный интервальный кодер с контекстными моделями: тип секции (воздух/однородная/палитра), повтор палитры/id, флаг совпадения с предыдущим блоком, контекст нижнего соседа по Y. Хорош для типичного террейна (воздух, слои, руды, пещеры, деревья).",
     make: || Box::new(CtxPaletteCodec) as Box<dyn Codec>,

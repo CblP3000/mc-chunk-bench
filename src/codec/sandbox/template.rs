@@ -117,8 +117,6 @@ impl Codec for TemplateCodec {
 // Когда реализация готова, замените на:
 //
 // pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-//     id: "template-palette",
-//     name: "Template Palette (per-chunk)",
 //     group: "palette", // rle | layered | minecraft | palette | palette-rle | adaptive | context-modeling | predictive | deflate | raw
 //     description: "Краткое описание.",
 //     make: || Box::new(TemplateCodec) as Box<dyn Codec>,

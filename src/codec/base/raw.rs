@@ -8,8 +8,6 @@ use anyhow::{bail, Result};
 pub struct RawCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "raw",
-    name: "RAW u32 blocks",
     group: "raw",
     description: "Без сжатия: блок = 4 байта. Эталон скорости, верхняя граница размера.",
     make: || Box::new(RawCodec) as Box<dyn Codec>,
