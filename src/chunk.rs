@@ -147,7 +147,7 @@ fn parse_modern_chunk(
     }
     let min_y = entries.iter().map(|(y, _)| *y).min().unwrap();
     let max_y = entries.iter().map(|(y, _)| *y).max().unwrap();
-    let n_sections = (((max_y - min_y) / 16) + 1) as usize;
+    let n_sections = (max_y - min_y + 1) as usize;
 
     let mut out = Vec::with_capacity(n_sections);
     for _ in 0..n_sections {
@@ -155,7 +155,7 @@ fn parse_modern_chunk(
     }
     let mut any = false;
     for (y, sec) in entries {
-        let idx = ((y - min_y) / 16) as usize;
+        let idx = (y - min_y) as usize;
         let section = &mut out[idx];
         if let Some(bs) = sec.get("block_states") {
             let palette = bs
