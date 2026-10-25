@@ -120,15 +120,16 @@ impl Codec for MyAlgo {
 use crate::codec::RegistryEntry;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "my-algo",
-    name: "My Algo (palette + RLE)",
     group: "palette-rle", // rle | layered | minecraft | palette | palette-rle | adaptive | context-modeling | predictive | deflate | raw
     description: "Здесь: 1-2 предложения о том, как работает алгоритм и для каких данных он хорош.",
     make: || Box::new(MyAlgo) as Box<dyn Codec>,
 }];
 ```
 
-- `id` — уникальный короткий идентификатор (появится в отчёте и на графиках).
+Обратите внимание: `id` и `name` в реестре **не нужны** — они берутся из
+методов `Codec::id()`/`Codec::name()` (трейт), которые вы уже реализовали в
+разделе 2.1. Поля `RegistryEntry`:
+
 - `group` — категория для раскраски графиков (см. список в комментарии).
 - `description` — описание, оно живёт в коде рядом с инициализацией
   и автоматически попадает в JSON-отчёт и на страницу.
@@ -185,7 +186,7 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 
 - [ ] Создан `src/codec/sandbox/<name>.rs` с `impl Codec`.
 - [ ] В этом же файле объявлен `pub const REGISTRY: &[RegistryEntry]`
-      (id, имя, категория, описание, фабрика).
+      (категория, описание, фабрика).
 - [ ] `src/codec/mod.rs` **не изменялся** (это проверено тестом ниже).
 - [ ] `cargo build --release` собирается без ошибок (build.rs сам подхватил файл).
 - [ ] `cargo test` проходит.

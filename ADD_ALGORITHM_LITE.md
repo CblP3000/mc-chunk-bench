@@ -111,8 +111,6 @@ pub trait Codec: Send + Sync {
 use crate::codec::RegistryEntry;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
-    id: "my-algo",
-    name: "My Algo",
     group: "mygroup",
     description: "Краткое описание, что делает алгоритм и для каких данных он хорош.",
     make: || Box::new(MyAlgoCodec) as Box<dyn Codec>,
@@ -120,8 +118,6 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 ```
 
 Поля:
-- `id` — уникальный короткий идентификатор (латиница, дефисы/цифры);
-- `name` — человекочитаемое имя;
 - `group` — имя группы метода, отражающее механизм сжатия. Существующие
   группы: `"raw"` (без сжатия), `"rle"` (run-length), `"layered"` (слои),
   `"minecraft"` (стандарт MC), `"palette"` (палитра+битпак),
@@ -132,6 +128,11 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
   укажите свою строку; группа влияет на цвет на графиках;
 - `description` — описание;
 - `make` — функция, возвращающая `Box<dyn Codec>` с вашим алгоритмом.
+
+`id` и `name` в реестре НЕ указываются: они берутся из методов
+`Codec::id()`/`Codec::name()` (раздел 5). Поле `id` метода `Codec::id()`
+должно быть уникальным коротким идентификатором (латиница, дефисы/цифры);
+`name` — человекочитаемое имя, которое появится в отчёте и на графиках.
 
 Ничего в других файлах менять не нужно: регистрация происходит автоматически.
 
