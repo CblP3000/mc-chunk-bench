@@ -30,6 +30,7 @@ struct Args {
     max_chunks: usize,
     seed: u64,
     port: u16,
+    host: String,
 }
 
 fn parse_args() -> Args {
@@ -40,6 +41,7 @@ fn parse_args() -> Args {
     let mut max_chunks = 512usize;
     let mut seed = 1u64;
     let mut port = DEFAULT_PORT;
+    let mut host = String::from("127.0.0.1");
     let mut a = args.next();
     while let Some(arg) = a {
         match arg.as_str() {
@@ -71,6 +73,9 @@ fn parse_args() -> Args {
                     .parse()
                     .expect("--port must be a number");
             }
+            "--host" => {
+                host = args.next().expect("--host needs a value").to_string();
+            }
             "-h" | "--help" => {
                 usage();
                 std::process::exit(0);
@@ -90,6 +95,7 @@ fn parse_args() -> Args {
         max_chunks,
         seed,
         port,
+        host,
     }
 }
 
@@ -98,7 +104,7 @@ fn usage() {
     eprintln!(
         "  chunk_saver bench [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S]"
     );
-    eprintln!("  chunk_saver serve [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S] [--port P]");
+    eprintln!("  chunk_saver serve [--worlds-dir DIR] [--exclude NAME]... [--max-chunks N] [--seed S] [--host H] [--port P]");
     eprintln!();
     eprintln!(
         "  --worlds-dir  path to a save, or a directory of saves (default: ~/.minecraft/saves)"
@@ -106,6 +112,7 @@ fn usage() {
     eprintln!("  --exclude      exclude worlds whose name contains NAME (repeatable)");
     eprintln!("  --max-chunks  chunks to sample (default 512)");
     eprintln!("  --seed        RNG seed for sampling (default 1)");
+    eprintln!("  --host        bind address for 'serve' (default 127.0.0.1; use 0.0.0.0 to expose to LAN)");
     eprintln!("  --port        HTTP port for 'serve' (default {DEFAULT_PORT})");
 }
 
@@ -155,7 +162,7 @@ async fn main() -> Result<()> {
 
     if args.cmd == "serve" {
         let app = web::router(report);
-        let addr = format!("0.0.0.0:{}", args.port);
+        let addr = format!("{}:{}", args.host, args.port);
         eprintln!("listening on http://{addr} (ctrl-c to stop)");
         let listener = tokio::net::TcpListener::bind(&addr).await?;
         axum::serve(listener, app).await?;
