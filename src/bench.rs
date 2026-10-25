@@ -5,10 +5,10 @@ use crate::chunk::Chunk;
 use crate::codec::Ctx;
 use crate::world::WorldData;
 use anyhow::Result;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CodecResult {
     pub id: String,
     pub name: String,
@@ -28,7 +28,7 @@ pub struct CodecResult {
     pub note: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DatasetReport {
     pub label: String,
     pub n_chunks: usize,
@@ -53,7 +53,7 @@ impl DatasetReport {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BenchmarkReport {
     pub generated_at: String,
     pub world_dirs: Vec<String>,

@@ -22,11 +22,21 @@ cargo run --release --bin mc-chunk-bench -- serve --port 8095
 | Флаг | Описание | По умолчанию |
 |---|---|---|
 | `--worlds-dir DIR` | путь к сейву или папке saves | `~/.minecraft/saves` |
+| `--world NAME` | оставить только миры, в имени которых есть NAME (можно повторять) | все |
 | `--exclude NAME` | исключить миры, в имени которых есть NAME (можно повторять) | — |
 | `--max-chunks N` | сколько чанков сэмплировать | `512` |
 | `--seed S` | детерминированная выборка | `1` |
 | `--host H` | адрес прослушивания для `serve` | `127.0.0.1` |
 | `--port P` | порт HTTP | `8095` |
+| `--save-report[=FILE]` | сохранить JSON-отчёт (только `bench`) | `target/last_report.json` |
+| `--from-report[=FILE]` | `serve`: показать сохранённый отчёт без новой пересборки | `target/last_report.json` |
+
+Быстрый повторный показ результатов (без повторного бенчмарка):
+
+```bash
+cargo run --release --bin mc-chunk-bench -- bench --save-report
+cargo run --release --bin mc-chunk-bench -- serve --from-report
+```
 
 Если ваш `.minecraft` лежит не в `~/` (например, на отдельном диске),
 укажите путь явно:
