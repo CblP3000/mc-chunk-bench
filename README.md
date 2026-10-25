@@ -19,7 +19,7 @@ cargo run --release --bin chunk_saver -- serve --port 8095
 #   --exclude NAME    исключить миры, в имени которых есть NAME (можно повторять)
 #   --max-chunks N    сколько чанков сэмплировать (default 512)
 #   --seed S          детерминированная выборка
-#   --port P          порт HTTP (default 8095; 8080 запрещён)
+#   --port P          порт HTTP (default 8095)
 ```
 
 Если ваш `.minecraft` лежит не в `~/` (например, на отдельном диске),
