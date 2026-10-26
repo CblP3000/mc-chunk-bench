@@ -119,6 +119,8 @@ fn main() {
     gen.push_str("    for e in entries {\n");
     gen.push_str("        v.push(crate::codec::CodecRegistration::base(\n");
     gen.push_str("            (e.make)(),\n");
+    gen.push_str("            e.id,\n");
+    gen.push_str("            e.name,\n");
     gen.push_str("            e.group,\n");
     gen.push_str("            e.description,\n");
     gen.push_str("        ));\n");

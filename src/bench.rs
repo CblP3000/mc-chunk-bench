@@ -131,6 +131,8 @@ fn run_dataset(label: &str, data: &WorldData, pruned: Option<&WorldData>) -> Res
         let codec = &reg.codec;
         let g = codec.group_size();
         let n_units = tiles.len().max(1);
+        let id = reg.id.clone();
+        let name = reg.name.clone();
         let group = reg.group.to_string();
         let description = reg.description.clone();
         let gzip_extra = reg.gzip_extra;
@@ -190,8 +192,8 @@ fn run_dataset(label: &str, data: &WorldData, pruned: Option<&WorldData>) -> Res
             tile_idx += 1;
         }
         results.push(CodecResult {
-            id: codec.id(),
-            name: codec.name(),
+            id,
+            name,
             group,
             gzip_extra,
             description,

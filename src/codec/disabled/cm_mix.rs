@@ -19,6 +19,8 @@ pub const REGISTRY: &[RegistryEntry] = &[
     // ВРЕМЕННО ОТКЛЮЧЁН: слишком медленный encode/decode (~11 мс/чанк).
     // Для включения уберите комментарий со строк ниже.
     // RegistryEntry {
+    //     id: "cm-mix",
+    //     name: "CM Mix",
     //     group: "context-modeling",
     //     description: "Контекстное моделирование (lpaq-подобное): палитра + побитовый \
     //                   бинарный арифметический кодер с миксером хэшированных 3D-контекстов \
@@ -466,13 +468,6 @@ fn decode_symbol(pred: &mut Predictor, dec: &mut Decoder, nbits: u32, hashes: &[
 }
 
 impl Codec for CmMixCodec {
-    fn id(&self) -> String {
-        "cm-mix".to_string()
-    }
-    fn name(&self) -> String {
-        "CM Mix".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let ns = chunk.sections.len();

@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     let regs = mc_chunk_bench::codec::all_registrations(true);
     let reg = regs
         .iter()
-        .find(|r| r.codec.id() == "rle-column+deflate12")
+        .find(|r| r.id == "rle-column+deflate12")
         .unwrap();
     let ctx = Ctx {
         registry: &data.registry,

@@ -401,14 +401,6 @@ fn encode_biomes(sec: &Section, seen: &[&[u16]], w: &mut BitWriter) {
 // ------------------------- кодек -------------------------
 
 impl Codec for QuickPalCodec {
-    fn id(&self) -> String {
-        "quickpal".to_string()
-    }
-
-    fn name(&self) -> String {
-        "QuickPal".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         if chunks.is_empty() {
             return Vec::new();
@@ -610,6 +602,8 @@ impl Codec for QuickPalCodec {
 // ------------------------- регистрация -------------------------
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "quickpal",
+    name: "QuickPal",
     group: "adaptive",
     description: "Адаптивная палитра+битпак (uniform/sparse/RLE/backref на секцию): \
                   декод без энтропийного декодера — очень быстрый, сжатие хорошее.",

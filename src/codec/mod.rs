@@ -27,10 +27,6 @@ pub struct Ctx<'a> {
 }
 
 pub trait Codec: Send + Sync {
-    /// unique id used in reports
-    fn id(&self) -> String;
-    fn name(&self) -> String;
-
     /// number of chunks encoded together in one call (1, or 4 for 32x32 tiles)
     fn group_size(&self) -> usize {
         1
@@ -57,15 +53,21 @@ pub trait Codec: Send + Sync {
 /// algorithm's own file so that `src/codec/mod.rs` never has to change.
 #[derive(Clone, Copy)]
 pub struct RegistryEntry {
+    /// short unique id used in reports, e.g. "my-algo"
+    pub id: &'static str,
+    /// human-readable name shown in reports and charts
+    pub name: &'static str,
     /// method group used for coloring on charts: "raw" | "rle" | "minecraft" | "layered" | ...
     pub group: &'static str,
     pub description: &'static str,
     pub make: fn() -> Box<dyn Codec>,
 }
 
-/// A registered algorithm plus its group metadata. Returned by the registry.
+/// A registered algorithm plus its metadata. Returned by the registry.
 pub struct CodecRegistration {
     pub codec: Box<dyn Codec>,
+    pub id: String,
+    pub name: String,
     pub group: &'static str,
     pub description: String,
     /// true for entries created by the "compress everything with the same
@@ -74,9 +76,17 @@ pub struct CodecRegistration {
 }
 
 impl CodecRegistration {
-    fn base(codec: Box<dyn Codec>, group: &'static str, description: &'static str) -> Self {
+    fn base(
+        codec: Box<dyn Codec>,
+        id: &'static str,
+        name: &'static str,
+        group: &'static str,
+        description: &'static str,
+    ) -> Self {
         Self {
             codec,
+            id: id.to_string(),
+            name: name.to_string(),
             group,
             description: description.to_string(),
             gzip_extra: false,
@@ -94,20 +104,23 @@ pub fn all_registrations(with_gzip_extra: bool) -> Vec<CodecRegistration> {
     }
     let mut out = bases;
     for r in all_codecs_auto() {
-        if r.codec.id().contains("deflate") {
+        if r.id.contains("deflate") {
             continue;
         }
-        let id = r.codec.id().to_string();
         let group = r.group;
         let level = flate2::Compression::new(12);
+        let id = format!("{}+deflate{}", r.id, level.level());
+        let name = format!("{}+deflate{} (zlib)", r.id, level.level());
         let description = format!(
             "Базовый метод «{}» + дополнительное сжатие deflate (zlib, level {}) \
              — одно и то же для всех методов.",
-            id,
+            r.id,
             level.level()
         );
         out.push(CodecRegistration {
-            codec: Box::new(deflate::DeflateCodec::new(r.codec, level, &id)),
+            codec: Box::new(deflate::DeflateCodec::new(r.codec, level)),
+            id,
+            name,
             group,
             description,
             gzip_extra: true,

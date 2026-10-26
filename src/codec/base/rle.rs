@@ -8,6 +8,8 @@ use anyhow::{bail, Result};
 pub struct ColumnRleCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "rle-column",
+    name: "Column RLE (runs along Y)",
     group: "rle",
     description: "RLE по вертикальным колонкам (x, z): длинные серии камня/земли/воздуха сжимаются в пары «длина, блок». Быстро и просто.",
     make: || Box::new(ColumnRleCodec) as Box<dyn Codec>,
@@ -46,14 +48,6 @@ fn read_varint(bytes: &[u8], pos: &mut usize) -> Result<u32> {
 }
 
 impl Codec for ColumnRleCodec {
-    fn id(&self) -> String {
-        "rle-column".to_string()
-    }
-
-    fn name(&self) -> String {
-        "Column RLE (runs along Y)".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();

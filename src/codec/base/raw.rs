@@ -8,20 +8,14 @@ use anyhow::{bail, Result};
 pub struct RawCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "raw",
+    name: "RAW u32 blocks",
     group: "raw",
     description: "Без сжатия: блок = 4 байта. Эталон скорости, верхняя граница размера.",
     make: || Box::new(RawCodec) as Box<dyn Codec>,
 }];
 
 impl Codec for RawCodec {
-    fn id(&self) -> String {
-        "raw".to_string()
-    }
-
-    fn name(&self) -> String {
-        "RAW u32 blocks".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::with_capacity(chunk.sections.len() * (SECTION_BLOCKS * 4 + SECTION_BIOMES * 2) + 3);

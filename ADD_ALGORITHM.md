@@ -13,13 +13,14 @@
 
 ```rust
 pub trait Codec: Send + Sync {
-    fn id(&self) -> String;                 // короткий уникальный id, напр. "my-algo"
-    fn name(&self) -> String;               // человекочитаемое имя
     fn group_size(&self) -> usize { 1 }     // сколько чанков кодируется одним вызовом
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8>;
     fn decode_tile(&self, bytes: &[u8], ctx: &Ctx) -> Result<Vec<Chunk>>;
 }
 ```
+
+Вся текстовая мета (id, name, group, description) живёт **только в реестре**
+`REGISTRY` (см. раздел 2.2) — в трейте её нет.
 
 Ключевые контракты:
 
@@ -66,14 +67,6 @@ use anyhow::Result;
 pub struct MyAlgo;
 
 impl Codec for MyAlgo {
-    fn id(&self) -> String {
-        "my-algo".to_string()
-    }
-
-    fn name(&self) -> String {
-        "My Algo (palette + RLE)".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();
@@ -113,23 +106,25 @@ impl Codec for MyAlgo {
 use crate::codec::RegistryEntry;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "my-algo", // уникальный короткий id
+    name: "My Algo (palette + RLE)", // человекочитаемое имя
     group: "palette-rle", // rle | layered | minecraft | palette | palette-rle | adaptive | context-modeling | predictive | deflate | raw
     description: "Здесь: 1-2 предложения о том, как работает алгоритм и для каких данных он хорош.",
     make: || Box::new(MyAlgo) as Box<dyn Codec>,
 }];
 ```
 
-Обратите внимание: `id` и `name` в реестре **не нужны** — они берутся из
-методов `Codec::id()`/`Codec::name()` (трейт), которые вы уже реализовали в
-разделе 2.1. Поля `RegistryEntry`:
+Вся текстовая мета алгоритма: `id`, `name`, `group`, `description`. Поля
+`RegistryEntry`:
 
+- `id` — уникальный короткий идентификатор (латиница, дефисы/цифры),
+  попадает в JSON-отчёт.
+- `name` — человекочитаемое имя, видно в отчёте и на графиках.
 - `group` — категория для раскраски графиков (см. список в комментарии).
-- `description` — описание. Это **единственное место**, где оно живёт:
-  автоматически попадает в JSON-отчёт и на страницу. В трейте `Codec` метода
-  `description()` нет — не дублируйте текст в `impl Codec`.
+- `description` — описание (1-2 предложения), попадает в отчёт и на страницу.
 - `make` — фабрика: возвращает `Box<dyn Codec>`.
 - Если у алгоритма есть параметры, добавьте **несколько записей** в массив
-  `REGISTRY` — по одной на набор параметров.
+  `REGISTRY` — по одной на набор параметров (у каждой — свои id/name).
 
 **Ничего больше менять не нужно!** `build.rs` при сборке сканирует каталог
 `src/codec/` рекурсивно, находит ваш файл, автоматически объявляет модуль
@@ -221,9 +216,6 @@ use std::collections::HashMap;
 pub struct PaletteChunkCodec;
 
 impl Codec for PaletteChunkCodec {
-    fn id(&self) -> String { "palette-chunk".to_string() }
-    fn name(&self) -> String { "Palette per chunk".to_string() }
-
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();

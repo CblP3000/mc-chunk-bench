@@ -25,6 +25,8 @@ const SEC_BIOMES: usize = 64;
 pub struct FastBinCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "fastbin",
+    name: "FastBin",
     group: "adaptive",
     description: "Байт-выровненный формат с дешёвыми режимами декода: air/uniform/копия секции/палитра+битпак/RLE. Decode — почти чистый memcpy и slice-fill.",
     make: || Box::new(FastBinCodec) as Box<dyn Codec>,
@@ -479,13 +481,6 @@ fn decode_biomes(bytes: &[u8], pos: &mut usize, sections: &[Section]) -> Result<
 }
 
 impl Codec for FastBinCodec {
-    fn id(&self) -> String {
-        "fastbin".to_string()
-    }
-    fn name(&self) -> String {
-        "FastBin".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::with_capacity(2048);

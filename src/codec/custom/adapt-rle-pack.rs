@@ -5,6 +5,8 @@ use anyhow::Result;
 pub struct MyAlgoCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "adapt-rle-pack",
+    name: "Adaptive RLE + Palette",
     group: "adaptive",
     description: "Адаптивный алгоритм: для каждой секции выбирает лучший из RLE, битовой упаковки с палитрой или сырых данных.",
     make: || Box::new(MyAlgoCodec) as Box<dyn Codec>,
@@ -260,14 +262,6 @@ fn decode_section(pos: &mut usize, data: &[u8], len: usize, is_u16: bool) -> Res
 // ============================================================================
 
 impl Codec for MyAlgoCodec {
-    fn id(&self) -> String {
-        "adapt-rle-pack".to_string()
-    }
-
-    fn name(&self) -> String {
-        "Adaptive RLE + Palette".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();

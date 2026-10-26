@@ -11,6 +11,8 @@ use std::collections::HashMap;
 pub struct MinecraftCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "minecraft",
+    name: "Minecraft standard (palette + packed longs)",
     group: "minecraft",
     description: "Стандартный формат Minecraft 1.18+: палитра состояний блоков на секцию 16×16×16 + бит-упакованные long-массивы. Совместим с ванильным чанком.",
     make: || Box::new(MinecraftCodec) as Box<dyn Codec>,
@@ -286,14 +288,6 @@ fn decode_section(bytes: &[u8], pos: &mut usize, ctx: &Ctx) -> Result<Section> {
 }
 
 impl Codec for MinecraftCodec {
-    fn id(&self) -> String {
-        "minecraft".to_string()
-    }
-
-    fn name(&self) -> String {
-        "Minecraft standard (palette + packed longs)".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();

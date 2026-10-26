@@ -19,6 +19,8 @@ use std::collections::HashMap;
 pub struct CmFastCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "cm-fast",
+    name: "CM-Fast",
     group: "context-modeling",
     description: "Быстрое контекстное моделирование: палитра + побитовый \
                   бинарный арифметический кодер с миксером нескольких \
@@ -462,13 +464,6 @@ fn decode_symbol(pred: &mut Predictor, dec: &mut Decoder, nbits: u32, hashes: &[
 }
 
 impl Codec for CmFastCodec {
-    fn id(&self) -> String {
-        "cm-fast".to_string()
-    }
-    fn name(&self) -> String {
-        "CM-Fast".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let ns = chunk.sections.len();

@@ -254,20 +254,14 @@ fn packbits_decode(data: &[u8]) -> Result<Vec<u8>> {
 pub struct PaletteRleCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "palette-rle-packbits",
+    name: "Palette + PackBits RLE",
     group: "palette-rle",
     description: "Палитра уникальных блоков/биомов на секцию с битовой упаковкой индексов минимальной ширины (как в формате Anvil), поверх которой применяется лёгкий универсальный RLE (PackBits) для дополнительного сжатия однородных участков (воздух, сплошная порода, плоские биомы). Хорошее соотношение простоты реализации и степени сжатия.",
     make: || Box::new(PaletteRleCodec) as Box<dyn Codec>,
 }];
 
 impl Codec for PaletteRleCodec {
-    fn id(&self) -> String {
-        "palette-rle-packbits".to_string()
-    }
-
-    fn name(&self) -> String {
-        "Palette + PackBits RLE".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut raw = Vec::new();

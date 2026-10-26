@@ -75,13 +75,14 @@ pub struct BiomeRegistry { pub names: Vec<String> }  // get(name) -> Option<u16>
 
 ```rust
 pub trait Codec: Send + Sync {
-    fn id(&self) -> String;
-    fn name(&self) -> String;
     fn group_size(&self) -> usize { 1 }
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8>;
     fn decode_tile(&self, bytes: &[u8], ctx: &Ctx) -> Result<Vec<Chunk>>;
 }
 ```
+
+Вся текстовая мета (id, name, group, description) живёт в `REGISTRY`
+(раздел 7) — в трейте её нет.
 
 (`Result` здесь — `anyhow::Result`.)
 
@@ -110,6 +111,8 @@ pub trait Codec: Send + Sync {
 use crate::codec::RegistryEntry;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "my-algo", // уникальный короткий id
+    name: "My Algo", // человекочитаемое имя
     group: "mygroup",
     description: "Краткое описание, что делает алгоритм и для каких данных он хорош.",
     make: || Box::new(MyAlgoCodec) as Box<dyn Codec>,
@@ -117,6 +120,9 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 ```
 
 Поля:
+- `id` — уникальный короткий идентификатор (латиница, дефисы/цифры),
+  появляется в отчёте;
+- `name` — человекочитаемое имя, которое появится в отчёте и на графиках;
 - `group` — имя группы метода, отражающее механизм сжатия. Существующие
   группы: `"raw"` (без сжатия), `"rle"` (run-length), `"layered"` (слои),
   `"minecraft"` (стандарт MC), `"palette"` (палитра+битпак),
@@ -125,14 +131,11 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
   + арифметический кодер), `"predictive"` (пространственный предиктор),
   `"deflate"` (zlib/deflate). Если вашего метода нет среди существующих —
   укажите свою строку; группа влияет на цвет на графиках;
-- `description` — описание (единственное место, где оно живёт; в трейте
-  `Codec` метода `description()` нет);
+- `description` — описание;
 - `make` — функция, возвращающая `Box<dyn Codec>` с вашим алгоритмом.
 
-`id` и `name` в реестре НЕ указываются: они берутся из методов
-`Codec::id()`/`Codec::name()` (раздел 5). Поле `id` метода `Codec::id()`
-должно быть уникальным коротким идентификатором (латиница, дефисы/цифры);
-`name` — человекочитаемое имя, которое появится в отчёте и на графиках.
+Это вся мета: ничего из неё в `impl Codec` дублировать не нужно — методы
+`id()`/`name()`/`description()` в трейте отсутствуют.
 
 Ничего в других файлах менять не нужно: регистрация происходит автоматически.
 
@@ -148,9 +151,6 @@ pub struct MyAlgoCodec;
 pub const REGISTRY: &[RegistryEntry] = &[/* как в разделе 7 */];
 
 impl Codec for MyAlgoCodec {
-    fn id(&self) -> String { "my-algo".to_string() }
-    fn name(&self) -> String { "My Algo".to_string() }
-
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         // реализация
     }

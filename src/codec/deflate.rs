@@ -18,28 +18,15 @@ pub const REGISTRY: &[RegistryEntry] = &[];
 pub struct DeflateCodec {
     inner: Box<dyn Codec>,
     level: Compression,
-    tag: String,
 }
 
 impl DeflateCodec {
-    pub fn new(inner: Box<dyn Codec>, level: Compression, tag: &str) -> Self {
-        Self {
-            inner,
-            level,
-            tag: tag.to_string(),
-        }
+    pub fn new(inner: Box<dyn Codec>, level: Compression) -> Self {
+        Self { inner, level }
     }
 }
 
 impl Codec for DeflateCodec {
-    fn id(&self) -> String {
-        format!("{}+deflate{}", self.tag, self.level.level())
-    }
-
-    fn name(&self) -> String {
-        format!("{}+deflate{} (zlib)", self.tag, self.level.level())
-    }
-
     fn group_size(&self) -> usize {
         self.inner.group_size()
     }

@@ -5,19 +5,14 @@ use anyhow::{bail, Result};
 pub struct PaletteRleCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "palette-rle",
+    name: "Palette + RLE",
     group: "palette-rle",
     description: "Палитра + bit-packing индексов + RLE. Отлично сжимает типичные секции Minecraft (мало уникальных блоков + длинные серии). Хорошее соотношение размер/скорость.",
     make: || Box::new(PaletteRleCodec) as Box<dyn Codec>,
 }];
 
 impl Codec for PaletteRleCodec {
-    fn id(&self) -> String {
-        "palette-rle".to_string()
-    }
-    fn name(&self) -> String {
-        "Palette + RLE".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         assert_eq!(chunks.len(), 1);
         let chunk = chunks[0];

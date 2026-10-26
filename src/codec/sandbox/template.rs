@@ -2,10 +2,10 @@
 //!
 //! Как пользоваться:
 //! 1. Скопируйте этот файл в `src/codec/sandbox/my_algo.rs`.
-//! 2. Переименуйте `TemplateCodec` и id/name/description под свой алгоритм,
-//!    реализуйте encode/decode (сейчас это рабочий минимальный пример:
-//!    палитра на чанк + 1 байт индекса на блок).
+//! 2. Переименуйте `TemplateCodec` и реализуйте encode/decode (сейчас это
+//!    рабочий минимальный пример: палитра на чанк + 1 байт индекса на блок).
 //! 3. Заполните `REGISTRY` внизу (сейчас пуст — в бенчмарк не попадает).
+//!    Вся мета (id, name, group, description) живёт только в `REGISTRY`.
 //! 4. Проверьте: `cargo test` и
 //!    `cargo run --release --bin mc-chunk-bench -- bench --max-chunks 512`
 //!    (для нового алгоритма должно быть `ok=true`).
@@ -19,14 +19,6 @@ use std::collections::HashMap;
 pub struct TemplateCodec;
 
 impl Codec for TemplateCodec {
-    fn id(&self) -> String {
-        "template-palette".to_string()
-    }
-
-    fn name(&self) -> String {
-        "Template Palette (per-chunk)".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();
@@ -111,8 +103,10 @@ impl Codec for TemplateCodec {
 // Когда реализация готова, замените на:
 //
 // pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+//     id: "template-palette",          // уникальный короткий id
+//     name: "Template Palette (per-chunk)", // человекочитаемое имя
 //     group: "palette", // rle | layered | minecraft | palette | palette-rle | adaptive | context-modeling | predictive | deflate | raw
-//     description: "Краткое описание.", // единственное место, где живёт описание
+//     description: "Краткое описание.", // единственное место, где живёт мета
 //     make: || Box::new(TemplateCodec) as Box<dyn Codec>,
 // }];
 pub const REGISTRY: &[RegistryEntry] = &[];

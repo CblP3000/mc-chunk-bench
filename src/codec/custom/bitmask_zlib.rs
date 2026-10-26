@@ -6,20 +6,14 @@ use std::io::{Read, Write};
 pub struct BitmaskZlibCodec;
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "bitmask-zlib",
+    name: "Bitmask Zlib",
     group: "deflate",
     description: "Air-bitmask + zlib best: 4096-битная маска воздуха + только ненулевые блоки, затем zlib-лучшее сжатие. Отличное цена/качество для воздушных секций.",
     make: || Box::new(BitmaskZlibCodec) as Box<dyn Codec>,
 }];
 
 impl Codec for BitmaskZlibCodec {
-    fn id(&self) -> String {
-        "bitmask-zlib".to_string()
-    }
-
-    fn name(&self) -> String {
-        "Bitmask Zlib".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
 

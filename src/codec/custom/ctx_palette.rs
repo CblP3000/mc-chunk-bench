@@ -389,14 +389,6 @@ fn code_biome_indices(
 pub struct CtxPaletteCodec;
 
 impl Codec for CtxPaletteCodec {
-    fn id(&self) -> String {
-        "ctx-palette".to_string()
-    }
-
-    fn name(&self) -> String {
-        "CTX-Palette (range coder + context modeling)".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let ch = chunks[0];
         let mut rc = RangeCoder::new_enc();
@@ -729,6 +721,8 @@ impl Codec for CtxPaletteCodec {
 }
 
 pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
+    id: "ctx-palette",
+    name: "CTX-Palette (range coder + context modeling)",
     group: "context-modeling",
     description: "Палитры по секциям + LZMA-подобный интервальный кодер с контекстными моделями: тип секции (воздух/однородная/палитра), повтор палитры/id, флаг совпадения с предыдущим блоком, контекст нижнего соседа по Y. Хорош для типичного террейна (воздух, слои, руды, пещеры, деревья).",
     make: || Box::new(CtxPaletteCodec) as Box<dyn Codec>,

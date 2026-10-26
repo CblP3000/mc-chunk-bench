@@ -62,6 +62,8 @@ impl LayeredCodec {
 
 pub const REGISTRY: &[RegistryEntry] = &[
     RegistryEntry {
+        id: "layered",
+        name: "Layered 16x16 h1 (solid/adaptive/replicator/repeat)",
         group: "layered",
         description: "Слойный формат (слой = 1 блок, 16×16): заголовок байт на слой, 4 типа — solid / adaptive map / replicator / repeat. Выбирается минимальный по битам.",
         make: || Box::new(LayeredCodec::new(LayeredConfig::default())) as Box<dyn Codec>,
@@ -529,23 +531,6 @@ fn encode_layer_best(
 }
 
 impl Codec for LayeredCodec {
-    fn id(&self) -> String {
-        match (self.cfg.footprint, self.cfg.slice_height) {
-            (16, 1) => "layered".to_string(),
-            (16, 4) => "layered-h4".to_string(),
-            (16, 16) => "layered-h16".to_string(),
-            (32, 16) => "layered-32".to_string(),
-            _ => "layered-custom".to_string(),
-        }
-    }
-
-    fn name(&self) -> String {
-        format!(
-            "Layered {}x{} h{} (solid/adaptive/replicator/repeat)",
-            self.cfg.footprint, self.cfg.footprint, self.cfg.slice_height
-        )
-    }
-
     fn group_size(&self) -> usize {
         self.group()
     }

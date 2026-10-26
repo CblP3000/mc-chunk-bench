@@ -26,6 +26,8 @@ pub struct RleLinearCodec {
 
 pub const REGISTRY: &[RegistryEntry] = &[
     RegistryEntry {
+        id: "rle-linear",
+        name: "Linear RLE x,y,z (whole chunk)",
         group: "rle",
         description: "Весь чанк как одна линия в порядке x, y, z (снизу вверх): длинные серии камня под землёй и воздуха над поверхностью сжимаются в пары «длина, блок».",
         make: || Box::new(RleLinearCodec { order: ScanOrder::XyzUp }) as Box<dyn Codec>,
@@ -34,6 +36,8 @@ pub const REGISTRY: &[RegistryEntry] = &[
     // на положение «длинных серий», но не на размер на реальных чанках).
     // Для включения уберите комментарий со строк ниже.
     // RegistryEntry {
+    //     id: "rle-linear-top",
+    //     name: "Linear RLE top-down (air first)",
     //     group: "rle",
     //     description: "Весь чанк как одна линия, но y идёт сверху вниз: линия начинается с воздуха (небо), затем слои земли. Хорош, когда верхняя часть чанка почти пустая.",
     //     make: || Box::new(RleLinearCodec { order: ScanOrder::XyzDown }) as Box<dyn Codec>,
@@ -96,20 +100,6 @@ impl RleLinearCodec {
 }
 
 impl Codec for RleLinearCodec {
-    fn id(&self) -> String {
-        match self.order {
-            ScanOrder::XyzUp => "rle-linear".to_string(),
-            ScanOrder::XyzDown => "rle-linear-top".to_string(),
-        }
-    }
-
-    fn name(&self) -> String {
-        match self.order {
-            ScanOrder::XyzUp => "Linear RLE x,y,z (whole chunk)".to_string(),
-            ScanOrder::XyzDown => "Linear RLE top-down (air first)".to_string(),
-        }
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let n_sec = chunk.sections.len();
