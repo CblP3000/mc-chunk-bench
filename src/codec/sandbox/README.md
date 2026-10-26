@@ -10,7 +10,9 @@ JSON-отчёте и веб-UI.
 1. Скопируйте `template.rs` в новый файл, например `src/codec/sandbox/my_algo.rs`.
 2. Реализуйте `encode_tile` / `decode_tile` (трейт `Codec`, см.
    `src/codec/mod.rs` и `ADD_ALGORITHM.md`).
-3. Заполните и раскомментируйте `REGISTRY` в конце файла.
+3. Заполните и раскомментируйте `REGISTRY` в конце файла: `group` и
+   `description` указываются только там (в трейте `Codec` метода `description()`
+   нет).
 4. Проверьте round-trip:
 
    ```bash

@@ -81,10 +81,6 @@ impl Codec for TurboPalCodec {
         "TurboPal".to_string()
     }
 
-    fn description(&self) -> String {
-        "Ultra-fast decoding codec with adaptive RLE and power-of-two bit-packed palettes.".to_string()
-    }
-
     fn group_size(&self) -> usize {
         1
     }

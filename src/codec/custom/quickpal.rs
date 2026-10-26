@@ -409,14 +409,6 @@ impl Codec for QuickPalCodec {
         "QuickPal".to_string()
     }
 
-    fn description(&self) -> String {
-        "Палитра на секцию + жёсткий битпак; на каждую секцию выбирается минимальный формат \
-         (uniform / фон+исключения / палитра+RLE / ссылка на предыдущую секцию). \
-         Без энтропийного кодирования: decode — это memset/clone и сдвиги битов, \
-         поэтому очень быстрый; хорошо жмёт типичные чанки Minecraft."
-            .to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         if chunks.is_empty() {
             return Vec::new();

@@ -294,14 +294,6 @@ impl Codec for MinecraftCodec {
         "Minecraft standard (palette + packed longs)".to_string()
     }
 
-
-    fn description(&self) -> String {
-        "Reference format mirroring vanilla 1.18+ section storage: per-section \
-         palette with varint-prefixed names/properties, bit-packed long arrays \
-         (block bits >= 4, biome bits from palette size)."
-            .to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();

@@ -468,9 +468,6 @@ impl Codec for CmFastCodec {
     fn name(&self) -> String {
         "CM-Fast".to_string()
     }
-    fn description(&self) -> String {
-        "Быстрое контекстное моделирование с миксером 3D-контекстов и арифметическим кодером".to_string()
-    }
 
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];

@@ -485,9 +485,6 @@ impl Codec for FastBinCodec {
     fn name(&self) -> String {
         "FastBin".to_string()
     }
-    fn description(&self) -> String {
-        "Байт-выровненный формат: air/uniform/backref/палитра+битпак/RLE. Decode минимальный по работе (memcpy/fill/unrolled).".to_string()
-    }
 
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];

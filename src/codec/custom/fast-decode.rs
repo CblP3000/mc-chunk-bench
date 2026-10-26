@@ -19,9 +19,6 @@ impl Codec for FastDecodeCodec {
     fn name(&self) -> String {
         "Fast Decode".to_string()
     }
-    fn description(&self) -> String {
-        "Palette + bit-packed RLE, optimized for very fast decoding with good compression.".to_string()
-    }
 
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         let _ = ctx;

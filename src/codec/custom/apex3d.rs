@@ -291,11 +291,6 @@ impl Codec for Apex3dCodec {
         "Apex 3D".to_string()
     }
 
-    fn description(&self) -> String {
-        "Максимальное сжатие: 3D-предсказание вокселей, дедупликация секций, единая палитра и DEFLATE"
-            .to_string()
-    }
-
     fn group_size(&self) -> usize {
         1
     }

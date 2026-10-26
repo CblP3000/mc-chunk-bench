@@ -27,12 +27,6 @@ impl Codec for TemplateCodec {
         "Template Palette (per-chunk)".to_string()
     }
 
-    fn description(&self) -> String {
-        "Пример-заготовка: одна палитра на весь чанк + 1 байт индекса на блок. \
-         Показывает минимальный каркас кодека (round-trip работает)."
-            .to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();
@@ -118,7 +112,7 @@ impl Codec for TemplateCodec {
 //
 // pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 //     group: "palette", // rle | layered | minecraft | palette | palette-rle | adaptive | context-modeling | predictive | deflate | raw
-//     description: "Краткое описание.",
+//     description: "Краткое описание.", // единственное место, где живёт описание
 //     make: || Box::new(TemplateCodec) as Box<dyn Codec>,
 // }];
 pub const REGISTRY: &[RegistryEntry] = &[];

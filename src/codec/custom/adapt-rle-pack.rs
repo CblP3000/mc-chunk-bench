@@ -268,11 +268,6 @@ impl Codec for MyAlgoCodec {
         "Adaptive RLE + Palette".to_string()
     }
 
-    fn description(&self) -> String {
-        "Адаптивный алгоритм: для каждой секции выбирает лучший из RLE, битовой упаковки с палитрой или сырых данных."
-            .to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();

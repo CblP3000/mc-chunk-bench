@@ -20,10 +20,6 @@ impl Codec for BitmaskZlibCodec {
         "Bitmask Zlib".to_string()
     }
 
-    fn description(&self) -> String {
-        "Битмаска воздуха на секцию (4096 бит) + только ненулевые u32 ID блоков; биомы как есть; всё сжато zlib best.".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
 

@@ -77,7 +77,6 @@ pub struct BiomeRegistry { pub names: Vec<String> }  // get(name) -> Option<u16>
 pub trait Codec: Send + Sync {
     fn id(&self) -> String;
     fn name(&self) -> String;
-    fn description(&self) -> String;
     fn group_size(&self) -> usize { 1 }
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8>;
     fn decode_tile(&self, bytes: &[u8], ctx: &Ctx) -> Result<Vec<Chunk>>;
@@ -126,7 +125,8 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
   + арифметический кодер), `"predictive"` (пространственный предиктор),
   `"deflate"` (zlib/deflate). Если вашего метода нет среди существующих —
   укажите свою строку; группа влияет на цвет на графиках;
-- `description` — описание;
+- `description` — описание (единственное место, где оно живёт; в трейте
+  `Codec` метода `description()` нет);
 - `make` — функция, возвращающая `Box<dyn Codec>` с вашим алгоритмом.
 
 `id` и `name` в реестре НЕ указываются: они берутся из методов
@@ -150,7 +150,6 @@ pub const REGISTRY: &[RegistryEntry] = &[/* как в разделе 7 */];
 impl Codec for MyAlgoCodec {
     fn id(&self) -> String { "my-algo".to_string() }
     fn name(&self) -> String { "My Algo".to_string() }
-    fn description(&self) -> String { "…".to_string() }
 
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         // реализация

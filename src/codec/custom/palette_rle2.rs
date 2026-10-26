@@ -268,10 +268,6 @@ impl Codec for PaletteRleCodec {
         "Palette + PackBits RLE".to_string()
     }
 
-    fn description(&self) -> String {
-        "Палитра блоков/биомов с битовой упаковкой индексов + PackBits RLE поверх потока.".to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut raw = Vec::new();

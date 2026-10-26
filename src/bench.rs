@@ -132,6 +132,7 @@ fn run_dataset(label: &str, data: &WorldData, pruned: Option<&WorldData>) -> Res
         let g = codec.group_size();
         let n_units = tiles.len().max(1);
         let group = reg.group.to_string();
+        let description = reg.description.clone();
         let gzip_extra = reg.gzip_extra;
 
         let mut bytes_total = 0u64;
@@ -193,7 +194,7 @@ fn run_dataset(label: &str, data: &WorldData, pruned: Option<&WorldData>) -> Res
             name: codec.name(),
             group,
             gzip_extra,
-            description: codec.description(),
+            description,
             group_size: g,
             bytes_total,
             bytes_avg: if any_measured {

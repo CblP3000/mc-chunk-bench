@@ -17,9 +17,6 @@ impl Codec for PaletteRleCodec {
     fn name(&self) -> String {
         "Palette + RLE".to_string()
     }
-    fn description(&self) -> String {
-        "Палитра + bit-packing + RLE по индексам. Оптимален для воксельных данных с локальной однородностью.".to_string()
-    }
 
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         assert_eq!(chunks.len(), 1);

@@ -22,13 +22,6 @@ impl Codec for RawCodec {
         "RAW u32 blocks".to_string()
     }
 
-
-    fn description(&self) -> String {
-        "No compression: 4 bytes per block + 2 bytes per biome. Upper bound \
-         for size, reference for speed."
-            .to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::with_capacity(chunk.sections.len() * (SECTION_BLOCKS * 4 + SECTION_BIOMES * 2) + 3);

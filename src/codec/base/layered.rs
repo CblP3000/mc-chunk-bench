@@ -546,16 +546,6 @@ impl Codec for LayeredCodec {
         )
     }
 
-
-    fn description(&self) -> String {
-        "Per-layer header byte with 4 storage types: solid (uniform layer), \
-         adaptive map (index width 1..32 bits, optional local palette, source \
-         list: global / biome / layer), replicator (run-length with 4/8/12/20 \
-         bit counts, first count nibble in the header), repeat (identical to \
-         previous layer or period-2 pattern)."
-            .to_string()
-    }
-
     fn group_size(&self) -> usize {
         self.group()
     }

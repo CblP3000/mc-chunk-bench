@@ -110,20 +110,6 @@ impl Codec for RleLinearCodec {
         }
     }
 
-
-    fn description(&self) -> String {
-        match self.order {
-            ScanOrder::XyzUp => {
-                "Весь чанк как одна линия в порядке x, y, z (снизу вверх): длинные серии камня под землёй и воздуха над поверхностью сжимаются в пары «длина, блок»."
-                    .to_string()
-            }
-            ScanOrder::XyzDown => {
-                "Весь чанк как одна линия, но y идёт сверху вниз: линия начинается с воздуха (небо), затем слои земли. Хорош, когда верхняя часть чанка почти пустая."
-                    .to_string()
-            }
-        }
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let n_sec = chunk.sections.len();

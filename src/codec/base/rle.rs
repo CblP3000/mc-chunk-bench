@@ -54,13 +54,6 @@ impl Codec for ColumnRleCodec {
         "Column RLE (runs along Y)".to_string()
     }
 
-
-    fn description(&self) -> String {
-        "Run-length encoding per vertical column (x, z). Fast and simple; \
-         compresses the tall runs of stone/dirt/air found in real terrain."
-            .to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();

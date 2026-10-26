@@ -15,7 +15,6 @@
 pub trait Codec: Send + Sync {
     fn id(&self) -> String;                 // короткий уникальный id, напр. "my-algo"
     fn name(&self) -> String;               // человекочитаемое имя
-    fn description(&self) -> String;        // описание (1-2 предложения)
     fn group_size(&self) -> usize { 1 }     // сколько чанков кодируется одним вызовом
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8>;
     fn decode_tile(&self, bytes: &[u8], ctx: &Ctx) -> Result<Vec<Chunk>>;
@@ -75,12 +74,6 @@ impl Codec for MyAlgo {
         "My Algo (palette + RLE)".to_string()
     }
 
-    fn description(&self) -> String {
-        "Здесь: 1-2 предложения о том, как работает алгоритм и для каких \
-         данных он хорош."
-            .to_string()
-    }
-
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];
         let mut out = Vec::new();
@@ -131,8 +124,9 @@ pub const REGISTRY: &[RegistryEntry] = &[RegistryEntry {
 разделе 2.1. Поля `RegistryEntry`:
 
 - `group` — категория для раскраски графиков (см. список в комментарии).
-- `description` — описание, оно живёт в коде рядом с инициализацией
-  и автоматически попадает в JSON-отчёт и на страницу.
+- `description` — описание. Это **единственное место**, где оно живёт:
+  автоматически попадает в JSON-отчёт и на страницу. В трейте `Codec` метода
+  `description()` нет — не дублируйте текст в `impl Codec`.
 - `make` — фабрика: возвращает `Box<dyn Codec>`.
 - Если у алгоритма есть параметры, добавьте **несколько записей** в массив
   `REGISTRY` — по одной на набор параметров.
@@ -229,11 +223,6 @@ pub struct PaletteChunkCodec;
 impl Codec for PaletteChunkCodec {
     fn id(&self) -> String { "palette-chunk".to_string() }
     fn name(&self) -> String { "Palette per chunk".to_string() }
-    fn description(&self) -> String {
-        "Одна палитра на весь чанк + 1 байт на блок. Проще Minecraft-стандарта, \
-         хуже на больших палитрах."
-            .to_string()
-    }
 
     fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];

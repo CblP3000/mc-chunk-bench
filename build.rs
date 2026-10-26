@@ -118,10 +118,9 @@ fn main() {
     gen.push_str("    ].concat();\n");
     gen.push_str("    for e in entries {\n");
     gen.push_str("        v.push(crate::codec::CodecRegistration::base(\n");
-    gen.push_str(
-        "            Box::new(crate::codec::DescribedCodec::new((e.make)(), e.description)),\n",
-    );
+    gen.push_str("            (e.make)(),\n");
     gen.push_str("            e.group,\n");
+    gen.push_str("            e.description,\n");
     gen.push_str("        ));\n");
     gen.push_str("    }\n");
     gen.push_str("    v\n");

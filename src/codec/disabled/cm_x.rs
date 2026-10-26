@@ -472,9 +472,6 @@ impl Codec for CmXCodec {
     fn name(&self) -> String {
         "CM-X".to_string()
     }
-    fn description(&self) -> String {
-        "Контекстное моделирование с миксером 3D-контекстов и арифметическим кодером".to_string()
-    }
 
     fn encode_tile(&self, chunks: &[&Chunk], _ctx: &Ctx) -> Vec<u8> {
         let chunk = chunks[0];

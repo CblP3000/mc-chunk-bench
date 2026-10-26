@@ -30,7 +30,6 @@ pub trait Codec: Send + Sync {
     /// unique id used in reports
     fn id(&self) -> String;
     fn name(&self) -> String;
-    fn description(&self) -> String;
 
     /// number of chunks encoded together in one call (1, or 4 for 32x32 tiles)
     fn group_size(&self) -> usize {
@@ -68,60 +67,20 @@ pub struct RegistryEntry {
 pub struct CodecRegistration {
     pub codec: Box<dyn Codec>,
     pub group: &'static str,
+    pub description: String,
     /// true for entries created by the "compress everything with the same
     /// deflate" toggle
     pub gzip_extra: bool,
 }
 
 impl CodecRegistration {
-    fn base(codec: Box<dyn Codec>, group: &'static str) -> Self {
+    fn base(codec: Box<dyn Codec>, group: &'static str, description: &'static str) -> Self {
         Self {
             codec,
             group,
+            description: description.to_string(),
             gzip_extra: false,
         }
-    }
-}
-
-/// Decorator that attaches a human-readable description to a codec.
-/// Used by the auto-generated registry; overrides only `description()`.
-pub struct DescribedCodec {
-    inner: Box<dyn Codec>,
-    description: String,
-}
-
-impl DescribedCodec {
-    pub fn new(inner: Box<dyn Codec>, description: &'static str) -> Self {
-        Self {
-            inner,
-            description: description.to_string(),
-        }
-    }
-}
-
-impl Codec for DescribedCodec {
-    fn id(&self) -> String {
-        self.inner.id()
-    }
-
-    fn name(&self) -> String {
-        self.inner.name()
-    }
-
-    fn description(&self) -> String {
-        self.description.clone()
-    }
-
-    fn group_size(&self) -> usize {
-        self.inner.group_size()
-    }
-
-    fn encode_tile(&self, chunks: &[&Chunk], ctx: &Ctx) -> Vec<u8> {
-        self.inner.encode_tile(chunks, ctx)
-    }
-
-    fn decode_tile(&self, bytes: &[u8], ctx: &Ctx) -> Result<Vec<Chunk>> {
-        self.inner.decode_tile(bytes, ctx)
     }
 }
 
@@ -140,13 +99,17 @@ pub fn all_registrations(with_gzip_extra: bool) -> Vec<CodecRegistration> {
         }
         let id = r.codec.id().to_string();
         let group = r.group;
+        let level = flate2::Compression::new(12);
+        let description = format!(
+            "Базовый метод «{}» + дополнительное сжатие deflate (zlib, level {}) \
+             — одно и то же для всех методов.",
+            id,
+            level.level()
+        );
         out.push(CodecRegistration {
-            codec: Box::new(deflate::DeflateCodec::new(
-                r.codec,
-                flate2::Compression::new(12),
-                &id,
-            )),
+            codec: Box::new(deflate::DeflateCodec::new(r.codec, level, &id)),
             group,
+            description,
             gzip_extra: true,
         });
     }

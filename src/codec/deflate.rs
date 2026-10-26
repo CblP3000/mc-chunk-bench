@@ -40,15 +40,6 @@ impl Codec for DeflateCodec {
         format!("{}+deflate{} (zlib)", self.tag, self.level.level())
     }
 
-    fn description(&self) -> String {
-        format!(
-            "Базовый метод «{}» + дополнительное сжатие deflate (zlib, level {}) \
-             — одно и то же для всех методов.",
-            self.tag,
-            self.level.level()
-        )
-    }
-
     fn group_size(&self) -> usize {
         self.inner.group_size()
     }
