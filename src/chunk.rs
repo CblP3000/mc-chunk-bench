@@ -345,11 +345,14 @@ fn parse_legacy_chunk(
     })
 }
 
-/// Remove blocks that cannot be seen from the outside ("Bobby-style" culling).
+/// Remove blocks that cannot be seen from the outside ("Bobby-style" culling),
+/// filling the occluded interior with a surrounding solid material instead of
+/// air.
 ///
 /// Flood-fill from the 6 boundary faces through air cells; any non-air block
 /// adjacent to a reached air cell is considered visible. Everything else is
-/// replaced with air (id 0).
+/// replaced with the most common non-air block of the chunk (typically stone,
+/// deepslate or dirt).
 pub fn prune_interior(chunk: &mut Chunk) -> usize {
     let w = CHUNK_W;
     let h = chunk.height();
@@ -357,6 +360,19 @@ pub fn prune_interior(chunk: &mut Chunk) -> usize {
         return 0;
     }
     let air = 0u32;
+
+    // Representative fill material: the most frequent non-air block in the
+    // chunk — i.e. the material you'd find around the occluded interior.
+    let mut counts: std::collections::HashMap<u32, u32> = std::collections::HashMap::new();
+    for sec in &chunk.sections {
+        for &b in &sec.blocks {
+            if b != air {
+                *counts.entry(b).or_insert(0) += 1;
+            }
+        }
+    }
+    let filler = counts.into_iter().max_by_key(|&(_, c)| c).map(|(b, _)| b);
+
     let mut visible_air = vec![false; w * w * h];
     let mut queue = std::collections::VecDeque::new();
 
@@ -434,8 +450,11 @@ pub fn prune_interior(chunk: &mut Chunk) -> usize {
         }
     }
 
-    // Remove non-visible non-air blocks: a solid block is visible iff at
+    // Fill non-visible non-air blocks: a solid block is visible iff at
     // least one of its 6 neighbours is reached air (the "shell" of the escape).
+    // Invisible blocks are replaced with the surrounding fill material (or air
+    // if the chunk has no solids at all).
+    let fill = filler.unwrap_or(air);
     let mut removed = 0;
     for y in 0..h {
         let sec = &mut chunk.sections[y / 16];
@@ -456,7 +475,7 @@ pub fn prune_interior(chunk: &mut Chunk) -> usize {
                     visible_air[idx(nx as usize, ny as usize, nz as usize)]
                 });
                 if !visible {
-                    sec.blocks[r] = air;
+                    sec.blocks[r] = fill;
                     removed += 1;
                 }
             }
@@ -547,10 +566,41 @@ mod tests {
             })
             .sum::<usize>();
         assert_eq!(kept, 4 * CHUNK_W);
-        // corners one step away from the tunnel are culled
-        assert_eq!(at(5, 7, 7), 0);
-        assert_eq!(at(5, 6, 8), 0);
+        // corners one step away from the tunnel are filled with the surrounding
+        // material (all-stone chunk -> stone id 5), not air
+        assert_eq!(at(5, 7, 7), 5);
+        assert_eq!(at(5, 6, 8), 5);
         assert_eq!(removed, SECTION_BLOCKS - CHUNK_W - kept);
+    }
+
+    #[test]
+    fn prune_fills_interior_with_dominant_material() {
+        // Mostly dirt with a single buried stone block; the buried block must be
+        // replaced by the dominant (dirt) material, not air.
+        let mut ch = Chunk {
+            x: 0,
+            z: 0,
+            section_min_y: 0,
+            sections: vec![solid_section(2)], // dirt
+        };
+        {
+            let b = &mut ch.sections[0].blocks;
+            b[1 * 256 + 1 * 16 + 1] = 5; // buried stone
+            for x in 0..CHUNK_W {
+                b[8 * 256 + 8 * 16 + x] = 0; // air tunnel along X at y=8,z=8
+            }
+        }
+        let removed = prune_interior(&mut ch);
+        let blocks = &ch.sections[0].blocks;
+        let at = |x: usize, y: usize, z: usize| blocks[y * 256 + z * 16 + x];
+        // buried stone becomes surrounding dirt
+        assert_eq!(at(1, 1, 1), 2);
+        // tunnel stays air, shell stays dirt
+        for x in 0..CHUNK_W {
+            assert_eq!(at(x, 8, 8), 0);
+            assert_eq!(at(x, 7, 8), 2);
+        }
+        assert!(removed > 0);
     }
 
     #[test]
