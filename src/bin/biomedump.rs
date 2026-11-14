@@ -21,9 +21,12 @@ fn main() -> Result<()> {
     let mut sections_with_biomes = 0usize;
     let mut sections_biome_pal = 0usize;
     let mut sections_biome_data = 0usize;
-    let mut seen_palette: std::collections::BTreeMap<String, usize> = std::collections::BTreeMap::new();
-    let mut seen_biome_bits: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
-    let mut seen_entry_kinds: std::collections::BTreeMap<String, usize> = std::collections::BTreeMap::new();
+    let mut seen_palette: std::collections::BTreeMap<String, usize> =
+        std::collections::BTreeMap::new();
+    let mut seen_biome_bits: std::collections::BTreeMap<usize, usize> =
+        std::collections::BTreeMap::new();
+    let mut seen_entry_kinds: std::collections::BTreeMap<String, usize> =
+        std::collections::BTreeMap::new();
 
     for rp in &region_paths {
         let region = RegionFile::open(rp)?;
@@ -78,10 +81,17 @@ fn main() -> Result<()> {
                 }
                 if total_chunks <= 2 {
                     let pal = bi.get("palette").and_then(|p| p.as_list());
-                    println!("chunk slot={slot} region={} secY={y}", rp.file_name().unwrap_or_default().to_string_lossy());
+                    println!(
+                        "chunk slot={slot} region={} secY={y}",
+                        rp.file_name().unwrap_or_default().to_string_lossy()
+                    );
                     println!("  biomes tag: {:?}", bi);
                     if let Some(pal) = pal {
-                        println!("  palette list len={} first entry: {:?}", pal.len(), pal.first());
+                        println!(
+                            "  palette list len={} first entry: {:?}",
+                            pal.len(),
+                            pal.first()
+                        );
                     }
                 }
             }
@@ -98,6 +108,9 @@ fn main() -> Result<()> {
     for (k, v) in &seen_palette {
         println!("  {k}: {v}");
     }
-    println!("biome data long-array bits distribution: {:?}", seen_biome_bits);
+    println!(
+        "biome data long-array bits distribution: {:?}",
+        seen_biome_bits
+    );
     Ok(())
 }
