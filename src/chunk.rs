@@ -209,7 +209,12 @@ fn parse_modern_chunk(
                 let ids: Vec<u16> = palette
                     .iter()
                     .map(|p| {
-                        let name = p.get_str("Name").unwrap_or("minecraft:plains");
+                        // Biome palette entries: older saves use a compound
+                        // {Name: "..."}, newer ones plain strings.
+                        let name = match p {
+                            NbtValue::String(s) => s.as_str(),
+                            _ => p.get_str("Name").unwrap_or("minecraft:plains"),
+                        };
                         intern_biome(name)
                     })
                     .collect();
